@@ -122,6 +122,24 @@ These are the club's photos, so they're used as references only and not stored h
 - **IMG_0838, IMG_0833:** confirm the Noord glazing and hotel windows already modelled.
 - **IMG_0832** is labelled AI content by the club. It is not used for geometry.
 
+## S9. Roboticket seat data (event 4758, read 21 Nov 2026 from the logged-in seat map)
+
+There are 12,423 seats in total, read with the user's own login. The map coordinates are a
+schematic 150-unit grid, so only the layout is used. It is stored in
+`references/roboticket_seatmap.json`, and every modelled seat matches the ticketing count per block.
+
+- **Oost** has 29 rows, not 27. The wide blocks (C, E, G, I) have 25 seats per row, and A and K
+  have 20. In the narrow blocks (B, D, F, H, J), rows 7 to 15 are missing, which is where the five
+  tunnel mouths are. In row 29, seats 3 and 23 are missing in the wide blocks. Seat 1 is at the
+  north end of each row.
+- **Noord** has 16 rows. X2, Y2 and Z2 have rows 9 to 16 only, so their tunnels are at the front.
+  Seat 1 is at the east end.
+- **West lower** has 10 rows. V1 has a stair after seat 13, and Q1 to T1 have no seat 1 in row 1.
+  Seat 1 is at the north end.
+- **West balcony** has 6 rows. SR2 is the press area: rows 3 and 5 have no seats.
+- **Not modelled:** W (5 x 100 seats in front of the north half of West), the skyboxes,
+  office boxes and lounges, the demolished Zuid stand, and the PITCH sector.
+
 ## Advertising inventory
 
 `build.py` writes `adslots/inventory.csv` with 65 slots:
@@ -140,6 +158,6 @@ each slot's id and size.
 | Risers | Oost 0.50, Noord 0.50, West 0.46 and 0.48 m | Back-solved from the measured heights above |
 | Noord facade line | v 69 | EST. A solve of IMG_6228 would fix it |
 | Pitch line width | 68 m (aerial says 65.5) | Open |
-| Oost aisles and tunnels | ticketing block boundaries; tunnels in C, E, G, I, rows 8-15 | EST. Positions not yet checked against a photo solve |
-| West and Noord aisles and tunnels, West front strip W | not modelled | To do |
+| Stair widths | sized to fill each stand between the real blocks (0.9-1.8 m) | EST |
+| West front strip W, hospitality boxes | not modelled | To do |
 | Zuid | current state by default; 2020 design available as `south_mode: provisional` | Waiting on the real building |

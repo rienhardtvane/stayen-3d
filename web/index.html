@@ -88,7 +88,7 @@
     </div>
     <div class="lbl">Or tap a seat on the plan</div>
     <canvas id="plan"></canvas>
-    <div class="note">Concept model built from public drawings, the aerial photo and matchday photos. Seat positions follow the ticketing blocks; numbering and the exact seat pattern are approximate. Advertising boards show empty placeholder slots. The south end shows the site as it stands since June 2026.</div>
+    <div class="note">Concept model built from public drawings, the aerial photo and matchday photos. Blocks, rows and seat numbers match the club ticketing system; seat positions within the stands and the seat colour pattern are approximate. Advertising boards show empty placeholder slots. The south end shows the site as it stands since June 2026.</div>
   </aside>
 </main>
 
@@ -552,7 +552,8 @@ plan.addEventListener("click", e => {
     if (d < bd) { bd = d; best = st; }
   }
   if (!best || bd > 24 * dpr) return;
-  Object.assign(state, { tier: best[0], block: best[1], row: best[2], seat: best[3] });
+  const rowList = index[best[0]][best[1]][best[2]];
+  Object.assign(state, { tier: best[0], block: best[1], row: best[2], seat: rowList.indexOf(best) + 1 });
   pick();
 });
 

@@ -48,42 +48,33 @@ STANDS = {
         "front": 40.0,            # PH: IMG_6223 camera solves to row ~5 at u=44; roof edge +33 (S1)
         "along": (-60.0, 52.0),   # S1 roof extent v -60..+52
         "tiers": [
-            {   # one tier, 27 rows (S2, block G)
-                "rows": 27,
-                "tread": 0.75,     # EST, 27 rows from u=40.5 to the S1 back line at ~60
-                "riser": 0.50,     # PH: DMM fascia top solved at 16.5 m (IMG_6935)
+            {   # one tier, 29 rows (S9)
+                "rows": 29,        # S9 Roboticket: 29 rows in Oost
+                "tread": 0.72,     # EST, 29 rows from u=40.5 to the S1 back line at ~61
+                "riser": 0.464,    # PH: top row kept at the height solved from IMG_6935 (DMM fascia 16.5 m)
                 "y0": 0.5,
                 "z0": 1.3,         # S7: low front wall behind the LED boards
                 "colour": "east",
-                # Block boundaries in world v from the ticketing map's sector extents (S2),
-                # scaled onto the 112 m stand. A is the north end. Aisle at every boundary (EST).
-                "aisles_v": [40.9, 33.75, 19.4, 13.4, -1.0, -7.0, -21.4, -27.4, -41.7, -48.9],
-                "aisle_width": 1.2,   # EST
-                # Four tunnel mouths (S8 IMG_0834), rows 8-15 (S2 block G seat view), EST 3.6 m wide
-                "tunnels_v": [26.6, 6.2, -14.2, -34.6],
-                "tunnel_rows": (8, 15),
-                "tunnel_width": 3.6,
-                "block_labels": {"A": 46.5, "B": 37.3, "C": 26.6, "D": 16.4, "E": 6.2, "F": -4.0,
-                                 "G": -14.2, "H": -24.4, "I": -34.6, "J": -45.3, "K": -54.5},
+                "labels": True,    # block letters above the top row (S8 IMG_0840)
             }
         ],
-        "back": {"y": (20.75, 21.5), "z": 16.5},
+        "back": {"y": (21.4, 22.0), "z": 16.5},
         # PH: roof front edge solved at 19.7-20.0 m at u=33 (IMG_6935); rises to the back (S7)
-        "roof": {"y": (-7.0, 21.5), "z": 19.6, "thick": 0.9, "slope": 1.8,
-                 "bay": 9.3, "rafter_depth": 1.8, "columns_y": 21.0},  # bays: 12 fascia panels (S8)
+        "roof": {"y": (-7.0, 22.0), "z": 19.6, "thick": 0.9, "slope": 1.8,
+                 "bay": 9.3, "rafter_depth": 1.8, "columns_y": 21.7},  # bays: 12 fascia panels (S8)
         "end_mat": "glass",       # S7: glazed wind screens at both ends of Oost
         "lights": True,           # S7: floodlights along the roof front edge
         "blocks": [
             # strip of windows between the fascia and the roof (S7)
-            {"y": (21.2, 21.5), "z": (16.5, 19.6), "x": None, "mat": "glass"},
+            {"y": (21.7, 22.0), "z": (16.5, 19.6), "x": None, "mat": "glass"},
             # DMM.com fascia along the back of the top row, top at 16.5 m (PH)
-            {"y": (20.6, 20.8), "z": (15.3, 16.5), "x": None, "mat": "fascia_white"},
+            {"y": (21.3, 21.5), "z": (15.3, 16.5), "x": None, "mat": "fascia_white"},
         ],
     },
     "north": {  # Noord, 2009, hotel built into it (S5, S7)
         "outward": (0, 1),
         "front": 55.5,            # S1 roof edge +52, goal line 52.5. EST
-        "along": (-40.0, 26.5),   # PH: seats run from the NW tower to the NE brick tower (IMG_6935)
+        "along": (-42.0, 26.5),   # PH: NW tower to the NE brick tower (IMG_6935); fits 120 seats + 8 stairs (S9)
         "tiers": [
             {   # 16 rows (S2, block Y1)
                 "rows": 16,
@@ -168,34 +159,32 @@ SOUTH = {
     "terrace_length": 60.0,  # EST
 }
 
-# Ticketing blocks per stand (S2: Roboticket sector extents, scaled onto each stand's length).
-# Boundaries are world coordinates along the stand (v for Oost/West, u for Noord), listed from
-# the first block's outer edge to the last block's outer edge.
-TICKET_BLOCKS = {
-    ("east", 0): (["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"],
-                  [52.0, 40.9, 33.75, 19.4, 13.4, -1.0, -7.0, -21.4, -27.4, -41.7, -48.9, -60.0]),
-    ("north", 0): (["X1", "X2", "X3", "Y1", "Y2", "Y3", "Z1", "Z2", "Z3"],
-                   [-40.0, -30.3, -26.5, -21.0, -8.9, -4.4, 7.7, 13.3, 17.1, 26.5]),
-    ("west", 0): (["V1", "U1", "T1", "S1", "R1", "Q1", "P1", "O1"],
-                  [50.0, 30.4, 17.7, 4.7, -8.4, -21.4, -34.5, -51.9, -62.0]),
-    ("west", 1): (["V2", "U2", "T2", "SR2", "Q2", "P2", "O2"],
-                  [50.0, 36.2, 18.8, 1.1, -15.2, -33.0, -50.4, -62.0]),
-}
+# Real block, row and seat layout from the ticketing system (S9). See the file for the format.
+SEATMAP = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      "references", "roboticket_seatmap.json")))
 STAND_NAMES = {("east", 0): "Oost", ("north", 0): "Noord",
                ("west", 0): "West lower", ("west", 1): "West balcony"}
+GAP_W = 1.2          # EST width of a stair inside a block ("gaps_after")
 
 SEATS = []          # filled while building: one dict per seat
 _CURRENT = {}       # stand key and tier index of the tier being built
 
 
-def ticket_block(stand_key, tier_idx, along):
-    names, edges = TICKET_BLOCKS[(stand_key, tier_idx)]
-    lo_first = edges[0] < edges[-1]
-    for i, n in enumerate(names):
-        a, b = edges[i], edges[i + 1]
-        if min(a, b) <= along <= max(a, b):
-            return n
-    return names[0] if (along < edges[0]) == lo_first else names[-1]
+def parse_runs(text):
+    out = []
+    for part in text.split(","):
+        a, _, b = part.partition("-")
+        out.extend(range(int(a), int(b or a) + 1))
+    return out
+
+
+def parse_rows(rows):
+    res = {}
+    for k, v in rows.items():
+        a, _, b = k.partition("-")
+        for r in range(int(a), int(b or a) + 1):
+            res[r] = parse_runs(v)
+    return res
 
 
 # Pitch surround. S1: artificial turf runs to the stand fronts.
@@ -544,18 +533,15 @@ def tier_profile(tier, lift=0.0):
     return prof
 
 
-def seat_block(name, xa, xb, row_a, row_b, tier, col, seat_mesh, seat_mat, mw):
-    """Seats with centres between xa and xb, rows row_a..row_b-1 (0-indexed). Instanced arrays."""
+def seat_run(name, x_first, step, labels, rows, tier, col, seat_mesh, seat_mat, mw, block, key, ti):
+    """Consecutive seats in consecutive rows as one instanced array. x_first is the local x of
+    the first label; step is +/-SEAT_PITCH towards the next label."""
     t, r = tier["tread"], tier["riser"]
-    n = int((xb - xa) / SEAT_PITCH)
-    rows = row_b - row_a
-    if n < 1 or rows < 1:
-        return 0
+    r0 = rows[0] - 1
     seats = bpy.data.objects.new(name, seat_mesh)
     col.objects.link(seats)
-    seats.matrix_world = mw @ Matrix.Translation(
-        (xa + SEAT_PITCH / 2, tier["y0"] + (row_a + 0.55) * t, tier["z0"] + row_a * r))
-    for mod_name, off, cnt in (("along_row", (SEAT_PITCH, 0, 0), n), ("up_rows", (0, t, r), rows)):
+    seats.matrix_world = mw @ Matrix.Translation((x_first, tier["y0"] + (r0 + 0.55) * t, tier["z0"] + r0 * r))
+    for mod_name, off, cnt in (("along_row", (step, 0, 0), len(labels)), ("up_rows", (0, t, r), len(rows))):
         m = seats.modifiers.new(mod_name, "ARRAY")
         m.use_relative_offset = False
         m.use_constant_offset = True
@@ -563,91 +549,132 @@ def seat_block(name, xa, xb, row_a, row_b, tier, col, seat_mesh, seat_mat, mw):
         m.count = cnt
     seats.material_slots[0].link = "OBJECT"
     seats.material_slots[0].material = seat_mat
-    key, ti = _CURRENT.get("stand"), _CURRENT.get("tier")
-    if key is not None:
-        stand = STANDS[key]
-        ox, oy = stand["outward"]
-        for rr in range(row_a, row_b):
-            for k in range(n):
-                lx = xa + SEAT_PITCH / 2 + k * SEAT_PITCH
-                p = mw @ Vector((lx, tier["y0"] + (rr + 0.55) * t, tier["z0"] + rr * r))
-                along = p.y if ox != 0 else p.x
-                SEATS.append({"stand": key, "tier": ti, "row": rr + 1, "lx": lx,
-                              "block": ticket_block(key, ti, along),
-                              "pos": (round(p.x, 2), round(p.y, 2), round(p.z, 2)),
-                              "out": (ox, oy)})
-    return n * rows
+    for row in rows:
+        for k, lab in enumerate(labels):
+            lx = x_first + k * step
+            p = mw @ Vector((lx, tier["y0"] + (row - 1 + 0.55) * t, tier["z0"] + (row - 1) * r))
+            SEATS.append({"stand": key, "tier": ti, "row": row, "no": lab, "block": block,
+                          "pos": (round(p.x, 2), round(p.y, 2), round(p.z, 2))})
+    return len(labels) * len(rows)
+
+
+def layout_blocks(layout, x0, x1, margin=0.6):
+    """Place the ticketing blocks along the stand: block width from its seat count, stairs
+    between blocks sized to fill the stand (0.9 to 1.8 m), the whole run centred."""
+    blocks = []
+    for b in layout["blocks"]:
+        rows = parse_rows(b["rows"])
+        width_labels = max(max(v) for v in rows.values())
+        gaps = b.get("gaps_after", [])
+        blocks.append({"name": b["name"], "rows": rows, "gaps": gaps,
+                       "w": width_labels * SEAT_PITCH + len(gaps) * GAP_W})
+    total = sum(b["w"] for b in blocks)
+    n = len(blocks)
+    aisle = min(1.8, max(0.9, (x1 - x0 - 2 * margin - total) / max(1, n - 1)))
+    span = total + aisle * (n - 1)
+    if layout["order"] == "+x":
+        cur = x0 + (x1 - x0 - span) / 2
+        for b in blocks:
+            b["x0"], b["x1"] = cur, cur + b["w"]
+            cur += b["w"] + aisle
+    else:
+        cur = x1 - (x1 - x0 - span) / 2
+        for b in blocks:
+            b["x0"], b["x1"] = cur - b["w"], cur
+            cur -= b["w"] + aisle
+    return blocks, aisle
 
 
 def build_tier(name, tier, x0, x1, col, seat_mesh, seat_mat, mw, stand):
-    t, r, rows = tier["tread"], tier["riser"], tier["rows"]
+    key, ti = _CURRENT["stand"], _CURRENT["tier"]
+    layout = SEATMAP[f"{key}-{ti}"]
+    t, r, rows_n = tier["tread"], tier["riser"], tier["rows"]
     y0, z0 = tier["y0"], tier["z0"]
     conc = prism_object(f"{name}_concrete", tier_profile(tier), x0, x1, "concrete", col, mw)
+    blocks, aisle = layout_blocks(layout, x0, x1)
+    high = layout["seat1"] == "high"
 
-    margin = 0.6
-    aw = tier.get("aisle_width", 1.2)
-    aisles = sorted(local_x(stand, v) for v in tier.get("aisles_v", []))
-    tw = tier.get("tunnel_width", 3.6)
-    tunnels = sorted(local_x(stand, v) for v in tier.get("tunnels_v", []))
-    ta, tb = tier.get("tunnel_rows", (0, 0))
-    ta -= 1  # 1-indexed rows in the config, 0-indexed here; rows ta..tb-1 are removed
+    def seat_x(b, lab):
+        off = (lab - 1) * SEAT_PITCH + SEAT_PITCH / 2 + GAP_W * sum(1 for g in b["gaps"] if lab > g)
+        return b["x1"] - off if high else b["x0"] + off
 
-    # Stairs: a thin yellow copy of the stepped profile in each aisle (S8: yellow stair nosings)
-    for i, ax in enumerate(aisles):
-        prism_object(f"{name}_stair{i}", tier_profile(tier, lift=0.02), ax - aw / 2, ax + aw / 2,
+    # Stairs: between blocks and inside blocks with a gap (S9), as a yellow stepped strip (S8)
+    stairs = []
+    ordered = sorted(blocks, key=lambda b: b["x0"])
+    for a_, b_ in zip(ordered, ordered[1:]):
+        stairs.append(((a_["x1"] + b_["x0"]) / 2, min(aisle, 1.4)))
+    for b in blocks:
+        for g in b["gaps"]:
+            stairs.append(((seat_x(b, g) + seat_x(b, g + 1)) / 2, GAP_W * 0.9))
+    for i, (sx, sw) in enumerate(stairs):
+        prism_object(f"{name}_stair{i}", tier_profile(tier, lift=0.02), sx - sw / 2, sx + sw / 2,
                      "stair", col, mw)
 
-    # Tunnel mouths: cut the concrete, dark back wall
-    if tunnels:
+    # Tunnel mouths: rows missing from a block inside the tier's range (S9)
+    if layout.get("tunnels"):
         bm = bmesh.new()
-        for tx in tunnels:
-            add_box(bm, tx - tw / 2, tx + tw / 2, y0 + ta * t, y0 + tb * t,
-                    z0 + ta * r, z0 + tb * r + 2.0)
-            box_object(f"{name}_tunnel_back", tx - tw / 2, tx + tw / 2, y0 + tb * t - 0.05,
-                       y0 + tb * t + 0.05, z0 + ta * r - 0.5, z0 + ta * r + 2.3, "tunnel_dark", col, mw)
-            # side rails
-            for sx in (tx - tw / 2, tx + tw / 2):
+        for b in blocks:
+            missing = [rw for rw in range(1, rows_n + 1) if rw not in b["rows"]]
+            if not missing:
+                continue
+            ta, tb = missing[0] - 1, missing[-1]       # 0-indexed start, exclusive end
+            tx0, tx1 = b["x0"] + 0.1, b["x1"] - 0.1
+            add_box(bm, tx0, tx1, y0 + ta * t, y0 + tb * t, z0 + ta * r, z0 + tb * r + 2.0)
+            box_object(f"{name}_tunnel_back_{b['name']}", tx0, tx1, y0 + tb * t - 0.05, y0 + tb * t + 0.05,
+                       z0 + ta * r - 0.5, z0 + ta * r + 2.3, "tunnel_dark", col, mw)
+            for sx in (tx0, tx1):
                 box_object(f"{name}_tunnel_rail", sx - 0.03, sx + 0.03, y0 + ta * t, y0 + tb * t,
                            z0 + ta * r + 0.9, z0 + ta * r + 1.0, "steel", col, mw)
-        cutter = new_object(f"{name}_tunnel_cutter", bm, None, col)
-        cutter.matrix_world = mw
-        cutter.hide_render = True
-        cutter.display_type = "WIRE"
-        bo = conc.modifiers.new("tunnels", "BOOLEAN")
-        bo.operation = "DIFFERENCE"
-        bo.object = cutter
-        bo.solver = "EXACT"
+        if bm.verts:
+            cutter = new_object(f"{name}_tunnel_cutter", bm, None, col)
+            cutter.matrix_world = mw
+            cutter.hide_render = True
+            cutter.display_type = "WIRE"
+            bo = conc.modifiers.new("tunnels", "BOOLEAN")
+            bo.operation = "DIFFERENCE"
+            bo.object = cutter
+            bo.solver = "EXACT"
+        else:
+            bm.free()
 
-    # Seat runs between aisles; inside a tunnel's width only the rows outside the tunnel
-    edges = [x0 + margin] + [e for ax in aisles for e in (ax - aw / 2, ax + aw / 2)] + [x1 - margin]
-    count = 0
-    k = 0
-    for i in range(0, len(edges), 2):
-        xa, xb = edges[i], edges[i + 1]
-        cuts = [tx for tx in tunnels if xa < tx < xb]
-        pos = xa
-        for tx in cuts:
-            count += seat_block(f"{name}_seats{k}", pos, tx - tw / 2, 0, rows, tier, col, seat_mesh, seat_mat, mw); k += 1
-            count += seat_block(f"{name}_seats{k}", tx - tw / 2, tx + tw / 2, 0, ta, tier, col, seat_mesh, seat_mat, mw); k += 1
-            count += seat_block(f"{name}_seats{k}", tx - tw / 2, tx + tw / 2, tb, rows, tier, col, seat_mesh, seat_mat, mw); k += 1
-            pos = tx + tw / 2
-        count += seat_block(f"{name}_seats{k}", pos, xb, 0, rows, tier, col, seat_mesh, seat_mat, mw); k += 1
+    # Seats: runs of consecutive labels (no gap) over consecutive rows with the same labels
+    count, k = 0, 0
+    step = -SEAT_PITCH if high else SEAT_PITCH
+    for b in blocks:
+        rows_sorted = sorted(b["rows"])
+        groups = []
+        for rw in rows_sorted:
+            if groups and groups[-1][1] == b["rows"][rw] and groups[-1][0][-1] == rw - 1:
+                groups[-1][0].append(rw)
+            else:
+                groups.append(([rw], b["rows"][rw]))
+        for rows_g, labels in groups:
+            run = [labels[0]]
+            for lab in labels[1:] + [None]:
+                if lab is not None and lab == run[-1] + 1 and run[-1] not in b["gaps"]:
+                    run.append(lab)
+                    continue
+                count += seat_run(f"{name}_{b['name']}_{k}", seat_x(b, run[0]), step, run, rows_g,
+                                  tier, col, seat_mesh, seat_mat, mw, b["name"], key, ti)
+                k += 1
+                run = [lab]
 
     # Block letters above the top row (S8 IMG_0840), on small yellow plaques
-    for letter, v in tier.get("block_labels", {}).items():
-        lx = local_x(stand, v)
-        yb = y0 + rows * t
-        zt = z0 + (rows - 1) * r + 2.6
-        box_object(f"{name}_plaque_{letter}", lx - 0.35, lx + 0.35, yb - 0.06, yb - 0.02,
-                   zt - 0.1, zt + 0.7, "banner_yellow", col, mw)
-        cu = bpy.data.curves.new(f"label_{letter}", "FONT")
-        cu.body = letter
-        cu.size = 0.6
-        cu.align_x = "CENTER"
-        cu.materials.append(MATS["steel"])
-        tx_ob = bpy.data.objects.new(f"{name}_label_{letter}", cu)
-        col.objects.link(tx_ob)
-        tx_ob.matrix_world = mw @ Matrix.Translation((lx, yb - 0.07, zt)) @ Matrix.Rotation(math.pi / 2, 4, "X")
+    if tier.get("labels"):
+        for b in blocks:
+            lx = (b["x0"] + b["x1"]) / 2
+            yb = y0 + rows_n * t
+            zt = z0 + (rows_n - 1) * r + 2.6
+            box_object(f"{name}_plaque_{b['name']}", lx - 0.35, lx + 0.35, yb - 0.06, yb - 0.02,
+                       zt - 0.1, zt + 0.7, "banner_yellow", col, mw)
+            cu = bpy.data.curves.new(f"label_{b['name']}", "FONT")
+            cu.body = b["name"]
+            cu.size = 0.6
+            cu.align_x = "CENTER"
+            cu.materials.append(MATS["steel"])
+            tx_ob = bpy.data.objects.new(f"{name}_label_{b['name']}", cu)
+            col.objects.link(tx_ob)
+            tx_ob.matrix_world = mw @ Matrix.Translation((lx, yb - 0.07, zt)) @ Matrix.Rotation(math.pi / 2, 4, "X")
     return count
 
 
@@ -919,7 +946,7 @@ def build_ads(cfg, col):
         slot = f"FA-E-{i + 1:02d}"
         xa, xb = x0 + i * w + 0.2, x0 + (i + 1) * w - 0.2
         SLOTS.append((slot, "fascia", "east back fascia", round(xb - xa, 2), 1.2))
-        quad_object(slot, [(xa, 20.58, 15.3), (xb, 20.58, 15.3), (xb, 20.58, 16.5), (xa, 20.58, 16.5)],
+        quad_object(slot, [(xa, 21.28, 15.3), (xb, 21.28, 15.3), (xb, 21.28, 16.5), (xa, 21.28, 16.5)],
                     slot_material(cfg, slot, "fascia"), col, mw=mw)
 
 
@@ -960,29 +987,20 @@ def export_web(out_dir, cfg):
     import json as _json
     os.makedirs(out_dir, exist_ok=True)
 
-    # Seat numbers: per block and row, seat 1 on the left as seen from the seat
-    groups = {}
-    for st in SEATS:
-        groups.setdefault((st["stand"], st["tier"], st["block"], st["row"]), []).append(st)
-    for g in groups.values():
-        g.sort(key=lambda st: -st["lx"])
-        for i, st in enumerate(g):
-            st["no"] = i + 1
-
     tiers = list(STAND_NAMES)
     out = {
-        "_note": "Generated by build.py --export-web. Positions are Blender metres (X towards Oost, "
+        "_note": "Generated by build.py --export-web. Blocks, rows and seat numbers follow the club ticketing system (S9). Positions are Blender metres (X towards Oost, "
                  "Y towards Noord, Z up), at the seat's tread; eye height is added in the page.",
         "eye_height": EYE_SEATED,
         "tiers": [{"id": f"{k}-{i}", "name": STAND_NAMES[(k, i)],
                    "outward": list(STANDS[k]["outward"]),
-                   "blocks": TICKET_BLOCKS[(k, i)][0]} for k, i in tiers],
+                   "blocks": [b["name"] for b in SEATMAP[f"{k}-{i}"]["blocks"]]} for k, i in tiers],
         "fields": ["tier", "block", "row", "seat", "x", "y", "z", "blue"],
         "seats": [],
     }
     for st in SEATS:
         ti = tiers.index((st["stand"], st["tier"]))
-        bi = TICKET_BLOCKS[(st["stand"], st["tier"])][0].index(st["block"])
+        bi = [b["name"] for b in SEATMAP[f"{st['stand']}-{st['tier']}"]["blocks"]].index(st["block"])
         out["seats"].append([ti, bi, st["row"], st["no"], *st["pos"], seat_colour(st, cfg)])
     with open(os.path.join(out_dir, "seats.json"), "w") as f:
         _json.dump(out, f, separators=(",", ":"))
