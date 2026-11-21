@@ -69,7 +69,8 @@ STANDS = {
         ],
         "back": {"y": (20.75, 21.5), "z": 16.5},
         # PH: roof front edge solved at 19.7-20.0 m at u=33 (IMG_6935); rises to the back (S7)
-        "roof": {"y": (-7.0, 21.5), "z": 19.6, "thick": 0.9, "slope": 1.8},
+        "roof": {"y": (-7.0, 21.5), "z": 19.6, "thick": 0.9, "slope": 1.8,
+                 "bay": 9.3, "rafter_depth": 1.8, "columns_y": 21.0},  # bays: 12 fascia panels (S8)
         "end_mat": "glass",       # S7: glazed wind screens at both ends of Oost
         "lights": True,           # S7: floodlights along the roof front edge
         "blocks": [
@@ -96,7 +97,7 @@ STANDS = {
         "back": {"y": (13.3, 18.0), "z": 1.0},
         # sloping canopy over the seats, lower edge ~19.5 m at the front, ~22.8 m at the
         # facade (PH, IMG_6935). Reaches v=52 in the aerial (S1)
-        "roof": {"y": (-3.5, 11.0), "z": 19.4, "thick": 0.6, "slope": 3.4},
+        "roof": {"y": (-3.5, 11.0), "z": 19.4, "thick": 0.6, "slope": 3.4, "bay": 7.6, "rafter_depth": 1.0},
         "end_mat": "facade",
         "lights": True,
         "blocks": [
@@ -135,7 +136,7 @@ STANDS = {
         ],
         "back": {"y": (15.3, 24.5), "z": 21.4},
         # PH: eave 21.4 m, floodlight row 19.8 m (IMG_6223). Curved (S7)
-        "roof": {"y": (1.0, 24.5), "z": 21.4, "thick": 0.8, "arc": 1.5},
+        "roof": {"y": (1.0, 24.5), "z": 21.4, "thick": 0.8, "arc": 1.5, "bay": 8.0, "rafter_depth": 1.2},
         "end_mat": "steel_glass",
         "lights": True,
         "blocks": [
@@ -700,6 +701,32 @@ def build_stand(key, stand, col, seat_mesh, seat_mats):
     prism_object(f"{key}_roof", bot + list(reversed(top)), x0 - 0.3, x1 + 0.3, "roof_top", col, mw)
     box_object(f"{key}_fascia", x0 - 0.3, x1 + 0.3, ry0, ry0 + 0.35, rz - 0.9, rz + th + 0.2,
                "steel", col, mw)
+
+    # Rafters under the roof, one per bay, deepening towards the back (S7/S8 photos show
+    # exposed steel rafters under Oost and Noord, and a curved beam line under West)
+    bay = roof.get("bay")
+    if bay:
+        sl = roof.get("slope", 0.0)
+        prof = [(ry0 + 0.35, rz - 0.5), (ry1, rz + sl - roof.get("rafter_depth", 1.4)),
+                (ry1, rz + sl), (ry0 + 0.35, rz)]
+        n = max(1, round((x1 - x0) / bay))
+        bm_x = [x0 + i * (x1 - x0) / n for i in range(n + 1)]
+        for i, bx in enumerate(bm_x):
+            prism_object(f"{key}_rafter{i}", prof, bx - 0.2, bx + 0.2, "steel", col, mw)
+        # purlins along the stand, every ~4 m across the roof depth
+        y = ry0 + 4.0
+        while y < ry1 - 1.0:
+            f = (y - ry0) / (ry1 - ry0)
+            zb = rz + sl * f
+            box_object(f"{key}_purlin", x0, x1, y - 0.12, y + 0.12, zb - 0.35, zb, "steel", col, mw)
+            y += 4.0
+        col_y = roof.get("columns_y")
+        if col_y is not None:
+            f = (col_y - ry0) / (ry1 - ry0)
+            ztop = rz + sl * f
+            for i, bx in enumerate(bm_x):
+                box_object(f"{key}_column{i}", bx - 0.3, bx + 0.3, col_y - 0.3, col_y + 0.3, 0.0, ztop,
+                           "steel", col, mw)
 
     if stand.get("lights"):
         # floodlights under the roof front (S7). One lamp object arrayed along the stand.

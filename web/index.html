@@ -81,6 +81,11 @@
       <div class="stepper"><button data-d="-1" data-k="row">−</button><div><small>Row</small><b id="rowv">1</b></div><button data-d="1" data-k="row">+</button></div>
       <div class="stepper"><button data-d="-1" data-k="seat">−</button><div><small>Seat</small><b id="seatv">1</b></div><button data-d="1" data-k="seat">+</button></div>
     </div>
+    <div class="lbl">Matchday</div>
+    <div class="chips" id="scenechips">
+      <button id="cDay" class="on">Day</button><button id="cNight">Night</button>
+      <button id="cCrowd" class="on">Crowd</button><button id="cEmpty">Empty</button>
+    </div>
     <div class="lbl">Or tap a seat on the plan</div>
     <canvas id="plan"></canvas>
     <div class="note">Concept model built from public drawings, the aerial photo and matchday photos. Seat positions follow the ticketing blocks; numbering and the exact seat pattern are approximate. Advertising boards show empty placeholder slots. The south end shows the site as it stands since June 2026.</div>
@@ -92,61 +97,123 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { Sky } from "three/addons/objects/Sky.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 // Blender metres (X to Oost, Y to Noord, Z up) -> three.js (Y up)
 const B = (x, y, z) => new THREE.Vector3(x, z, -y);
+const mobile = matchMedia("(max-width: 760px)").matches || /Mobi|Android|iPhone/.test(navigator.userAgent);
 
 const viewer = document.getElementById("viewer");
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.6 : 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 0.9;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 viewer.prepend(renderer.domElement);
 
 const scene = new THREE.Scene();
-{ // sky gradient
-  const c = document.createElement("canvas"); c.width = 2; c.height = 256;
-  const g = c.getContext("2d"), gr = g.createLinearGradient(0, 0, 0, 256);
-  gr.addColorStop(0, "#4f86cc"); gr.addColorStop(1, "#d4e2ee");
-  g.fillStyle = gr; g.fillRect(0, 0, 2, 256);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  scene.background = t;
-}
-scene.add(new THREE.HemisphereLight(0xdfe9f5, 0x6a6650, 1.7));
-const sun = new THREE.DirectionalLight(0xfff1dc, 2.4);
-sun.position.copy(B(-60, -110, 70));
+const pmrem = new THREE.PMREMGenerator(renderer);
+
+// Physical sky; the sun sits low in the south-west (late-November afternoon kick-off)
+const sky = new Sky();
+sky.scale.setScalar(4000);
+Object.assign(sky.material.uniforms.turbidity, { value: 5 });
+sky.material.uniforms.rayleigh.value = 1.6;
+sky.material.uniforms.mieCoefficient.value = 0.004;
+sky.material.uniforms.mieDirectionalG.value = 0.8;
+scene.add(sky);
+const sunDir = B(-0.36, -0.9, 0.0).normalize();
+{ const el = THREE.MathUtils.degToRad(17); sunDir.multiplyScalar(Math.cos(el)); sunDir.y = Math.sin(el); sunDir.normalize(); }
+sky.material.uniforms.sunPosition.value.copy(sunDir);
+
+const hemi = new THREE.HemisphereLight(0xdfe9f5, 0x6a6650, 0.55);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffeccc, 3.2);
+sun.position.copy(sunDir.clone().multiplyScalar(220));
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, near: 10, far: 400 });
-sun.shadow.bias = -0.0005;
+const sm = mobile ? 2048 : 4096;
+sun.shadow.mapSize.set(sm, sm);
+Object.assign(sun.shadow.camera, { left: -100, right: 100, top: 100, bottom: -100, near: 50, far: 500 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04;
 scene.add(sun);
 
-const camera = new THREE.PerspectiveCamera(60, 1, 0.05, 3000);
-const orbit = new OrbitControls(camera, renderer.domElement);
-orbit.enabled = false;
-orbit.target.set(0, 5, 0);
-orbit.maxPolarAngle = Math.PI * 0.47;
-orbit.minDistance = 40; orbit.maxDistance = 400;
+function bakeEnvironment() {
+  const s = new THREE.Scene();
+  const k = sky.clone(); s.add(k);
+  scene.environment = pmrem.fromScene(s, 0, 1, 5000).texture;
+}
 
-let data, mode = "seat", marker;
+const camera = new THREE.PerspectiveCamera(60, 1, 0.05, 6000);
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enabled = false; orbit.enableDamping = true;
+orbit.maxPolarAngle = Math.PI * 0.47;
+orbit.minDistance = 30; orbit.maxDistance = 400;
+
+// Bloom only at night (floodlights and LED)
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { samples: 4, type: THREE.HalfFloatType }));
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.4, 0.35, 1.0);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+let data, mode = "seat", marker, crowd, night = false;
 const state = { tier: 0, block: 0, row: 14, seat: 1 };
 const look = { yaw: 0, pitch: 0 };
-let index = {};   // index[tier][block][row] = [seat records sorted by seat no]
+let index = {};
 
 function resize() {
   const w = viewer.clientWidth, h = viewer.clientHeight;
   renderer.setSize(w, h, false);
+  composer.setSize(w, h);
+  bloom.setSize(w, h);
   camera.aspect = w / h;
-  // keep about 74 degrees across on any screen shape (a phone's main camera)
-  const hfov = 74 * Math.PI / 180;
+  const hfov = 74 * Math.PI / 180;   // about a phone's main camera across, any screen shape
   camera.fov = Math.min(80, 2 * Math.atan(Math.tan(hfov / 2) / camera.aspect) * 180 / Math.PI);
   camera.updateProjectionMatrix();
   drawPlan();
 }
 addEventListener("resize", resize);
+
+// ---------- procedural textures ----------
+function noiseTexture(size, base, spread, stripes = 0) {
+  const c = document.createElement("canvas"); c.width = c.height = size;
+  const g = c.getContext("2d"), img = g.createImageData(size, size);
+  const [r0, g0, b0] = base;
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    const n = (Math.random() - 0.5) * spread + (Math.random() < 0.02 ? -spread : 0);
+    const i = (y * size + x) * 4;
+    img.data[i] = r0 + n; img.data[i + 1] = g0 + n * 1.2; img.data[i + 2] = b0 + n * 0.6; img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+const turfTex = noiseTexture(256, [128, 128, 128], 46);
+const concreteTex = noiseTexture(256, [128, 128, 128], 22);
+
+function dress(mat) {
+  const n = mat.name || "";
+  if (n.startsWith("turf") || n === "apron") {
+    mat.map = turfTex; mat.roughness = 0.95; mat.metalness = 0;
+  } else if (n.startsWith("concrete") || n === "stair" || n === "ground" || n === "site") {
+    mat.map = concreteTex; mat.roughness = 0.9;
+  } else if (n === "glass") {
+    mat.roughness = 0.08; mat.metalness = 0.6; mat.envMapIntensity = 1.6;
+  } else if (n === "steel" || n === "steel_glass") {
+    mat.roughness = 0.45; mat.metalness = 0.55;
+  } else if (n === "roof_top") {
+    mat.roughness = 0.55; mat.metalness = 0.35;
+  }
+  mat.needsUpdate = true;
+}
 
 // ---------- data ----------
 const [gltf, seatsJson] = await Promise.all([
@@ -154,7 +221,31 @@ const [gltf, seatsJson] = await Promise.all([
   fetch("seats.json").then(r => r.json()),
 ]);
 data = seatsJson;
-gltf.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+const lampMats = [], ledMats = [];
+gltf.scene.traverse(o => {
+  if (!o.isMesh) return;
+  o.castShadow = true; o.receiveShadow = true;
+  // world-space UVs for the procedural textures (the boxes carry no UVs)
+  const n = o.material.name || "";
+  if (/^(turf|concrete|stair|ground|site|apron)/.test(n)) {
+    const g = o.geometry, pos = g.attributes.position, nor = g.attributes.normal;
+    const uv = new Float32Array(pos.count * 2), v = new THREE.Vector3(), nn = new THREE.Vector3();
+    o.updateWorldMatrix(true, false);
+    const sc = n.startsWith("turf") ? 0.25 : 0.5;
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+      nn.fromBufferAttribute(nor, i).transformDirection(o.matrixWorld);
+      const ax = Math.abs(nn.x), ay = Math.abs(nn.y);
+      const [a, b] = ay > 0.6 ? [v.x, v.z] : ax > 0.6 ? [v.z, v.y] : [v.x, v.y];
+      uv[i * 2] = a * sc; uv[i * 2 + 1] = b * sc;
+    }
+    g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+  }
+  dress(o.material);
+  if (n === "lamp") lampMats.push(o.material);
+  if (/^LED-/.test(n) || n === "screen") ledMats.push(o.material);
+  if (n === "lines" || n.startsWith("LED") || n === "lamp") o.castShadow = false;
+});
 scene.add(gltf.scene);
 
 for (const s of data.seats) {
@@ -164,31 +255,129 @@ for (const s of data.seats) {
 }
 for (const t in index) for (const b in index[t]) for (const r in index[t][b]) index[t][b][r].sort((a, c) => a[3] - c[3]);
 
-// Seats as one instanced mesh: CR6-sized shell (400 mm wide, 350 mm back, 450 mm high)
+const seatQuat = s => {
+  const out = data.tiers[s[0]].outward;
+  return new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(out[1], out[0]) - Math.PI / 2);
+};
+
+// Seats: CR6-sized shell (400 mm wide, 350 mm back, 450 mm high), slightly dished
 {
-  const pan = new THREE.BoxGeometry(0.4, 0.05, 0.36).translate(0, 0.425, 0.02);
-  const back = new THREE.BoxGeometry(0.4, 0.35, 0.05).translate(0, 0.625, -0.165);
-  const geo = mergeGeometries([pan, back]);
-  const mat = new THREE.MeshStandardMaterial({ roughness: 0.55 });
+  const shell = new THREE.Shape();
+  shell.moveTo(-0.2, 0); shell.quadraticCurveTo(0, 0.03, 0.2, 0);
+  shell.lineTo(0.2, 0.045); shell.quadraticCurveTo(0, 0.075, -0.2, 0.045); shell.closePath();
+  const pan = new THREE.ExtrudeGeometry(shell, { depth: 0.36, bevelEnabled: false }).translate(0, 0.4, -0.16);
+  const back = new THREE.ExtrudeGeometry(shell, { depth: 0.36, bevelEnabled: false })
+    .rotateX(-Math.PI / 2 + 0.18).translate(0, 0.43, -0.14);
+  const stem = new THREE.BoxGeometry(0.05, 0.4, 0.06).translate(0, 0.2, 0);
+  const geo = mergeGeometries([pan, back, stem].map(g => g.toNonIndexed()));
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ roughness: 0.45, metalness: 0.0 });
   const mesh = new THREE.InstancedMesh(geo, mat, data.seats.length);
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
+  const m = new THREE.Matrix4(), one = new THREE.Vector3(1, 1, 1), c = new THREE.Color();
   const yellow = new THREE.Color("#f6c700"), blue = new THREE.Color("#1e3c8c");
   data.seats.forEach((s, i) => {
-    const out = data.tiers[s[0]].outward;
-    q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(out[1], out[0]) - Math.PI / 2);
-    m.compose(B(s[4], s[5], s[6]), q, one);
+    m.compose(B(s[4], s[5], s[6]), seatQuat(s), one);
     mesh.setMatrixAt(i, m);
-    mesh.setColorAt(i, s[7] ? blue : yellow);
+    c.copy(s[7] ? blue : yellow).offsetHSL(0, 0, (Math.random() - 0.5) * 0.04);
+    mesh.setColorAt(i, c);
   });
   mesh.castShadow = true; mesh.receiveShadow = true;
   scene.add(mesh);
 }
+
+// Matchday crowd: simple seated figures in club colours, about 85% full
+function buildCrowd() {
+  const torso = new THREE.CylinderGeometry(0.16, 0.19, 0.52, 8).translate(0, 0.77, -0.02);
+  const legs = new THREE.BoxGeometry(0.32, 0.13, 0.4).translate(0, 0.52, 0.12);
+  const geo = mergeGeometries([torso.toNonIndexed(), legs.toNonIndexed()]);
+  const mesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.8 }), data.seats.length);
+  const heads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.1, 10, 8).translate(0, 1.15, 0),
+    new THREE.MeshStandardMaterial({ roughness: 0.7 }), data.seats.length);
+  const skins = ["#f1c9a5", "#e0ac83", "#c68a5c", "#8d5a3b", "#5a3825", "#3b2a22", "#d9b38c"];
+  const palette = ["#f6c700", "#f6c700", "#1e3c8c", "#1e3c8c", "#20232a", "#2b2f38", "#e8e8e8", "#6b6f78", "#8a5a3c", "#3d4f6b"];
+  const skin = new THREE.Color();
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), c = new THREE.Color();
+  let n = 0;
+  mesh.userData.seatIndex = [];
+  data.seats.forEach((s, i) => {
+    if (Math.random() > 0.85) return;
+    const qq = seatQuat(s).multiply(q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), (Math.random() - 0.5) * 0.4));
+    const sc = 0.92 + Math.random() * 0.16;
+    m.compose(B(s[4], s[5], s[6]), qq, one.set(sc, sc, sc));
+    mesh.setMatrixAt(n, m);
+    c.set(palette[Math.floor(Math.random() * palette.length)]);
+    mesh.setColorAt(n, c);
+    heads.setMatrixAt(n, m);
+    heads.setColorAt(n, c.set(skins[Math.floor(Math.random() * skins.length)]));
+    mesh.userData.seatIndex.push(i);
+    n++;
+  });
+  mesh.count = heads.count = n;
+  mesh.castShadow = mesh.receiveShadow = heads.castShadow = heads.receiveShadow = true;
+  mesh.add(heads);
+  mesh.userData.heads = heads;
+  return mesh;
+}
+crowd = buildCrowd();
+scene.add(crowd);
+
 marker = new THREE.Mesh(new THREE.ConeGeometry(0.9, 2.2, 20).rotateX(Math.PI),
   new THREE.MeshBasicMaterial({ color: 0xff3b30 }));
 marker.visible = false;
 scene.add(marker);
+
+// Floodlight spots from the roof fronts, used at night
+const spots = [];
+for (const [x, y, z] of [[-41, -30, 21], [-41, 30, 21], [33, -30, 20], [33, 30, 20], [-10, 52, 19], [12, 52, 19]]) {
+  const sp = new THREE.SpotLight(0xf3f6ff, 0, 0, 0.8, 0.6, 1.0);
+  sp.position.copy(B(x, y, z)); sp.target.position.copy(B(0, y * 0.25, 0));
+  scene.add(sp, sp.target); spots.push(sp);
+}
+
+bakeEnvironment();
 document.getElementById("loading").remove();
 
+// ---------- day / night ----------
+function setNight(on) {
+  night = on;
+  document.getElementById("cNight").classList.toggle("on", on);
+  document.getElementById("cDay").classList.toggle("on", !on);
+  sky.visible = !on;
+  scene.background = on ? new THREE.Color(0x05070d) : null;
+  if (on) scene.environment = null; else bakeEnvironment();
+  sun.intensity = on ? 0 : 3.2;
+  hemi.intensity = on ? 0.12 : 0.55;
+  spots.forEach(s => s.intensity = on ? 350 : 0);
+  lampMats.forEach(m => { m.emissiveIntensity = on ? 12 : 1; });
+  ledMats.forEach(m => { m.emissiveIntensity = on ? 1.6 : 1; });
+  renderer.toneMappingExposure = on ? 1.0 : 0.9;
+}
+function setCrowd(on) {
+  crowd.visible = on;
+  document.getElementById("cCrowd").classList.toggle("on", on);
+  document.getElementById("cEmpty").classList.toggle("on", !on);
+}
+document.getElementById("cDay").onclick = () => setNight(false);
+document.getElementById("cNight").onclick = () => setNight(true);
+document.getElementById("cCrowd").onclick = () => setCrowd(true);
+document.getElementById("cEmpty").onclick = () => setCrowd(false);
+
+// hide the crowd figure sitting in your own seat
+let hiddenCrowd = -1;
+const crowdBySeat = new Map(crowd.userData.seatIndex.map((si, k) => [si, k]));
+function clearOwnSeat(seatIdx) {
+  const parts = [crowd, crowd.userData.heads], m = new THREE.Matrix4();
+  if (hiddenCrowd >= 0) parts.forEach(p => p.setMatrixAt(hiddenCrowd, crowd.userData.saved));
+  hiddenCrowd = -1;
+  const k = crowdBySeat.get(seatIdx);
+  if (k !== undefined) {
+    crowd.getMatrixAt(k, m); crowd.userData.saved = m.clone();
+    parts.forEach(p => p.setMatrixAt(k, new THREE.Matrix4().makeScale(0, 0, 0)));
+    hiddenCrowd = k;
+  }
+  parts.forEach(p => p.instanceMatrix.needsUpdate = true);
+}
+const seatIdxOf = new Map(data.seats.map((s, i) => [s, i]));
 // ---------- seat selection ----------
 const rowsOf = (t, b) => Object.keys(index[t][b]).map(Number).sort((a, c) => a - c);
 function current() {
@@ -214,6 +403,7 @@ function goToSeat(resetLook = true) {
   }
   camera.position.copy(eye);
   applyLook();
+  clearOwnSeat(seatIdxOf.get(s));
   marker.position.copy(B(s[4], s[5], s[6] + 3.2));
   const blockName = t.blocks[s[1]];
   document.getElementById("seatlabel").innerHTML =
@@ -373,7 +563,7 @@ goToSeat(true);
 renderer.setAnimationLoop(() => {
   if (mode === "aerial") { orbit.update(); marker.rotation.y += 0.03; drawPlanThrottled(); }
   else if (drag) drawPlanThrottled();
-  renderer.render(scene, camera);
+  if (night) composer.render(); else renderer.render(scene, camera);
 });
 let lastPlan = 0;
 function drawPlanThrottled() { const n = performance.now(); if (n - lastPlan > 120) { lastPlan = n; drawPlan(); } }
