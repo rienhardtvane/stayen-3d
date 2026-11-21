@@ -39,16 +39,29 @@ Add an entry to `cameras` in `scene.json`:
 `along` is the position along the pitch in metres from the halfway line. It's positive towards
 Noord for the side stands, and positive towards Oost for the end stands.
 
-## Status (draft 2)
+## Advertising slots
 
-- **Pitch and stands.** The pitch, and the Oost, Noord and West stands, are placed from the aerial
-  measurements, with the real row counts.
-- **Heights.** Heights come from Rienhardt's matchday photos, by solving each photo's camera from the
-  pitch markings (`tools/solve_camera.py`).
-- **Matching renders.** Cameras named `match_*` reproduce those photos.
-  `tools/compare.py photo render out.jpg` puts the photo and the render side by side with an overlay.
-- **Detail.** Seats are a yellow and blue mix. The model includes the Noord hotel building, the brick
-  corner towers, the floodlights, the masts and the screen.
-- **Zuid.** Zuid shows the 2020 design (ae+ architecten) as **provisional**.
-- **Not modelled yet.** Aisles and tunnel openings, the West front strip W, signage content, and the area
-  around the stadium.
+Every sponsor position is a named slot. These are the LED runs, the printed boards on the stand front
+walls, and the Oost back fascia (`adslots/inventory.csv`). To show a partner's artwork, save it as
+`adslots/<SLOT>.png`, or map it in `scene.json`:
+
+```json
+"ads": { "assign": { "ST-E-10": "partners/acme_6x1.png", "LED-E": "partners/acme_led_10m.png" } }
+```
+
+LED images tile every 10 m. Printed boards stretch to their slot size (most are about 6.1 x 0.9 m). After
+changing the inventory, run `python tools/make_slots.py adslots/inventory.csv adslots/` to redraw
+the placeholders.
+
+## Status (draft 3)
+
+- **Zuid.** It shows the current state by default: an empty site, a black screen, and the crane. Set
+  `"south_mode": "provisional"` for the 2020 design.
+- **Oost.** It has 11 blocks (A to K) with stairs, 4 tunnel mouths, block letters, and an
+  approximation of the real seat pattern.
+- **Advertising.** There are 65 advertising slots with placeholder artwork. The pitch-side camera
+  `pitchside_oost_boards` is the sponsor view.
+- **Heights.** These come from Rienhardt's photos, by solving each photo's camera from the pitch
+  markings (`tools/solve_camera.py`).
+- **Not modelled yet.** West and Noord aisles and tunnels, the West front strip W, and the exact seat
+  pattern.

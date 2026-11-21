@@ -106,6 +106,32 @@ screen at the south end of Oost.
 
 The sunny photos showing the old Zuid stand (IMG_6263, IMG_6231) are from before the June 2026 demolition.
 
+## S8. STVV Instagram (stvv_official, Aug to Nov 2026), screenshots kept outside this repo
+
+These are the club's photos, so they're used as references only and not stored here.
+- **IMG_0835 (Conference League, 15 Oct):** the south end since the demolition. There is an empty
+  site behind a black screen on poles, a tower crane at the south-east corner, and terraced houses
+  beyond. Modelled as `south_mode: current`.
+- **IMG_0834:** Oost has four tunnel mouths, stairs at the block boundaries, and a designed blue seat
+  pattern (large shapes low and mid, sparse at the top). The pattern is approximated, because the
+  design can't be read at screenshot resolution.
+- **IMG_0840:** block letters sit on the beam above Oost's top row.
+- **IMG_0841:** printed boards (about 1 m high) run along the top of Oost's front wall, with the
+  perimeter LED about 2 to 3 m in front of them.
+- **IMG_0836:** block labels on the West balcony (R3) and the seat colours close up.
+- **IMG_0838, IMG_0833:** confirm the Noord glazing and hotel windows already modelled.
+- **IMG_0832** is labelled AI content by the club. It is not used for geometry.
+
+## Advertising inventory
+
+`build.py` writes `adslots/inventory.csv` with 65 slots:
+- 6 LED runs, with one tiled image per side: LED-W, LED-E, LED-N and LED-S.
+- Printed 6 m boards on the Oost, West and Noord front walls (ST-E, ST-W, ST-N).
+- 12 bays on the Oost back fascia (FA-E).
+
+Board sizes and positions are EST from S8 photos. `tools/make_slots.py` draws placeholders that show
+each slot's id and size.
+
 ## Estimates still to confirm
 
 | Item | Value used | Status |
@@ -114,5 +140,6 @@ The sunny photos showing the old Zuid stand (IMG_6263, IMG_6231) are from before
 | Risers | Oost 0.50, Noord 0.50, West 0.46 and 0.48 m | Back-solved from the measured heights above |
 | Noord facade line | v 69 | EST. A solve of IMG_6228 would fix it |
 | Pitch line width | 68 m (aerial says 65.5) | Open |
-| West front strip W, aisles, tunnels | not modelled | To do |
-| Zuid | 2020 design, provisional | Waiting on the real building |
+| Oost aisles and tunnels | ticketing block boundaries; tunnels in C, E, G, I, rows 8-15 | EST. Positions not yet checked against a photo solve |
+| West and Noord aisles and tunnels, West front strip W | not modelled | To do |
+| Zuid | current state by default; 2020 design available as `south_mode: provisional` | Waiting on the real building |

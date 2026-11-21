@@ -55,6 +55,16 @@ STANDS = {
                 "y0": 0.5,
                 "z0": 1.3,         # S7: low front wall behind the LED boards
                 "colour": "east",
+                # Block boundaries in world v from the ticketing map's sector extents (S2),
+                # scaled onto the 112 m stand. A is the north end. Aisle at every boundary (EST).
+                "aisles_v": [40.9, 33.75, 19.4, 13.4, -1.0, -7.0, -21.4, -27.4, -41.7, -48.9],
+                "aisle_width": 1.2,   # EST
+                # Four tunnel mouths (S8 IMG_0834), rows 8-15 (S2 block G seat view), EST 3.6 m wide
+                "tunnels_v": [26.6, 6.2, -14.2, -34.6],
+                "tunnel_rows": (8, 15),
+                "tunnel_width": 3.6,
+                "block_labels": {"A": 46.5, "B": 37.3, "C": 26.6, "D": 16.4, "E": 6.2, "F": -4.0,
+                                 "G": -14.2, "H": -24.4, "I": -34.6, "J": -45.3, "K": -54.5},
             }
         ],
         "back": {"y": (20.75, 21.5), "z": 16.5},
@@ -230,6 +240,85 @@ def make_mosaic(name, base_hex, accent_hex, accent_share):
     return m
 
 
+def make_pattern(name, base_hex, accent_hex):
+    """Oost seat pattern (S8 IMG_0834): large blue shapes in the lower and middle rows, sparse
+    blue near the top. The real design can't be read at screenshot resolution, so this is an
+    approximation driven by a large-scale noise field plus per-seat randomness."""
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    L = nt.links
+    bsdf = nt.nodes.get("Principled BSDF")
+    bsdf.inputs["Roughness"].default_value = 0.5
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    snap = nt.nodes.new("ShaderNodeVectorMath"); snap.operation = "SNAP"
+    snap.inputs[1].default_value = (0.5, 0.5, 0.4)
+    L.new(geo.outputs["Position"], snap.inputs[0])
+    rand = nt.nodes.new("ShaderNodeTexWhiteNoise"); rand.noise_dimensions = "3D"
+    L.new(snap.outputs["Vector"], rand.inputs["Vector"])
+    blob = nt.nodes.new("ShaderNodeTexNoise")
+    blob.inputs["Scale"].default_value = 0.22
+    blob.inputs["Detail"].default_value = 1.0
+    L.new(snap.outputs["Vector"], blob.inputs["Vector"])
+    stretch = nt.nodes.new("ShaderNodeMapRange")
+    stretch.inputs["From Min"].default_value = 0.42
+    stretch.inputs["From Max"].default_value = 0.58
+    L.new(blob.outputs["Fac"], stretch.inputs["Value"])
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    L.new(geo.outputs["Position"], sep.inputs["Vector"])
+    height = nt.nodes.new("ShaderNodeMapRange")
+    height.inputs["From Min"].default_value = 6.0
+    height.inputs["From Max"].default_value = 15.0
+    L.new(sep.outputs["Z"], height.inputs["Value"])
+
+    def math(op, a, b=None, val=None):
+        n = nt.nodes.new("ShaderNodeMath"); n.operation = op
+        L.new(a, n.inputs[0])
+        if b is not None:
+            L.new(b, n.inputs[1])
+        elif val is not None:
+            n.inputs[1].default_value = val
+        return n.outputs[0]
+
+    v = math("ADD", math("MULTIPLY", stretch.outputs["Result"], val=0.65),
+             math("MULTIPLY", rand.outputs["Value"], val=0.35))
+    v = math("SUBTRACT", v, math("MULTIPLY", height.outputs["Result"], val=0.45))
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.interpolation = "CONSTANT"
+    ramp.color_ramp.elements[0].color = hex_to_linear(base_hex)
+    ramp.color_ramp.elements[1].position = 0.58
+    ramp.color_ramp.elements[1].color = hex_to_linear(accent_hex)
+    L.new(v, ramp.inputs["Fac"])
+    L.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+    m.diffuse_color = hex_to_linear(base_hex)
+    MATS[name] = m
+    return m
+
+
+IMAGE_MATS = {}
+
+
+def make_image_material(path, strength):
+    """Emissive (LED) or matte (printed board) material from an artwork image."""
+    key = (path, strength)
+    if key in IMAGE_MATS:
+        return IMAGE_MATS[key]
+    m = bpy.data.materials.new(os.path.basename(path))
+    m.use_nodes = True
+    nt = m.node_tree
+    bsdf = nt.nodes.get("Principled BSDF")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(os.path.abspath(path))
+    tex.extension = "REPEAT"
+    nt.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = 0.6
+    if strength > 0:
+        nt.links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
+        bsdf.inputs["Emission Strength"].default_value = strength
+    IMAGE_MATS[key] = m
+    return m
+
+
 # ---------------------------------------------------------------------------
 # Mesh helpers
 # ---------------------------------------------------------------------------
@@ -274,6 +363,25 @@ def prism_object(name, profile, x0, x1, mat, collection, mw=None):
         j = (i + 1) % n
         bm.faces.new((a[i], a[j], b[j], b[i]))
     ob = new_object(name, bm, mat, collection)
+    if mw is not None:
+        ob.matrix_world = mw
+    return ob
+
+
+def quad_object(name, corners, mat, collection, u_repeat=1.0, mw=None):
+    """Quad from 4 corners (bottom-left, bottom-right, top-right, top-left) with UVs 0..u_repeat."""
+    bm = bmesh.new()
+    vs = [bm.verts.new(c) for c in corners]
+    f = bm.faces.new(vs)
+    uv = bm.loops.layers.uv.new("UVMap")
+    for loop, (u, v) in zip(f.loops, ((0, 0), (u_repeat, 0), (u_repeat, 1), (0, 1))):
+        loop[uv].uv = (u, v)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    ob = bpy.data.objects.new(name, me)
+    collection.objects.link(ob)
+    ob.data.materials.append(mat)
     if mw is not None:
         ob.matrix_world = mw
     return ob
@@ -371,7 +479,7 @@ def build_pitch(col):
     add_box(bm, 6, hw - 2, hl + o, hl + o + 0.2, 0, h)
     add_box(bm, -hw + 2, -6, -hl - o - 0.2, -hl - o, 0, h)
     add_box(bm, 6, hw - 2, -hl - o - 0.2, -hl - o, 0, h)
-    new_object("led_boards", bm, "led", col)
+    new_object("led_housing", bm, "steel", col)
 
     # Dugouts at the halfway line in front of West (S6: 27 seats each; S7 photos)
     for name, v0, v1 in (("dugout_home", 3.0, 12.0), ("dugout_away", -12.0, -3.0)):
@@ -392,25 +500,31 @@ def make_seat_mesh():
     return me
 
 
-def build_tier(name, tier, x0, x1, col, seat_mesh, seat_mat, mw):
+def tier_profile(tier, lift=0.0):
     t, r, rows = tier["tread"], tier["riser"], tier["rows"]
     y0, z0 = tier["y0"], tier["z0"]
-    prof = [(y0, 0.0), (y0, z0)]
+    prof = [(y0, 0.0), (y0, z0 + lift)]
     for i in range(rows):
-        z = z0 + i * r
+        z = z0 + i * r + lift
         prof.append((y0 + (i + 1) * t, z))
         if i < rows - 1:
             prof.append((y0 + (i + 1) * t, z + r))
     prof.append((y0 + rows * t, 0.0))
-    prism_object(f"{name}_concrete", prof, x0, x1, "concrete", col, mw)
+    return prof
 
-    # Seats: one seat mesh, arrayed along the row and up the rows (instanced, not copied)
-    margin = 0.6
-    count = int((x1 - x0 - 2 * margin) / SEAT_PITCH) + 1
-    seats = bpy.data.objects.new(f"{name}_seats", seat_mesh)
+
+def seat_block(name, xa, xb, row_a, row_b, tier, col, seat_mesh, seat_mat, mw):
+    """Seats with centres between xa and xb, rows row_a..row_b-1 (0-indexed). Instanced arrays."""
+    t, r = tier["tread"], tier["riser"]
+    n = int((xb - xa) / SEAT_PITCH)
+    rows = row_b - row_a
+    if n < 1 or rows < 1:
+        return 0
+    seats = bpy.data.objects.new(name, seat_mesh)
     col.objects.link(seats)
-    seats.matrix_world = mw @ Matrix.Translation((x0 + margin, y0 + 0.55 * t, z0))
-    for mod_name, off, cnt in (("along_row", (SEAT_PITCH, 0, 0), count), ("up_rows", (0, t, r), rows)):
+    seats.matrix_world = mw @ Matrix.Translation(
+        (xa + SEAT_PITCH / 2, tier["y0"] + (row_a + 0.55) * t, tier["z0"] + row_a * r))
+    for mod_name, off, cnt in (("along_row", (SEAT_PITCH, 0, 0), n), ("up_rows", (0, t, r), rows)):
         m = seats.modifiers.new(mod_name, "ARRAY")
         m.use_relative_offset = False
         m.use_constant_offset = True
@@ -418,7 +532,79 @@ def build_tier(name, tier, x0, x1, col, seat_mesh, seat_mat, mw):
         m.count = cnt
     seats.material_slots[0].link = "OBJECT"
     seats.material_slots[0].material = seat_mat
-    return count * rows
+    return n * rows
+
+
+def build_tier(name, tier, x0, x1, col, seat_mesh, seat_mat, mw, stand):
+    t, r, rows = tier["tread"], tier["riser"], tier["rows"]
+    y0, z0 = tier["y0"], tier["z0"]
+    conc = prism_object(f"{name}_concrete", tier_profile(tier), x0, x1, "concrete", col, mw)
+
+    margin = 0.6
+    aw = tier.get("aisle_width", 1.2)
+    aisles = sorted(local_x(stand, v) for v in tier.get("aisles_v", []))
+    tw = tier.get("tunnel_width", 3.6)
+    tunnels = sorted(local_x(stand, v) for v in tier.get("tunnels_v", []))
+    ta, tb = tier.get("tunnel_rows", (0, 0))
+    ta -= 1  # 1-indexed rows in the config, 0-indexed here; rows ta..tb-1 are removed
+
+    # Stairs: a thin yellow copy of the stepped profile in each aisle (S8: yellow stair nosings)
+    for i, ax in enumerate(aisles):
+        prism_object(f"{name}_stair{i}", tier_profile(tier, lift=0.02), ax - aw / 2, ax + aw / 2,
+                     "stair", col, mw)
+
+    # Tunnel mouths: cut the concrete, dark back wall
+    if tunnels:
+        bm = bmesh.new()
+        for tx in tunnels:
+            add_box(bm, tx - tw / 2, tx + tw / 2, y0 + ta * t, y0 + tb * t,
+                    z0 + ta * r, z0 + tb * r + 2.0)
+            box_object(f"{name}_tunnel_back", tx - tw / 2, tx + tw / 2, y0 + tb * t - 0.05,
+                       y0 + tb * t + 0.05, z0 + ta * r - 0.5, z0 + ta * r + 2.3, "tunnel_dark", col, mw)
+            # side rails
+            for sx in (tx - tw / 2, tx + tw / 2):
+                box_object(f"{name}_tunnel_rail", sx - 0.03, sx + 0.03, y0 + ta * t, y0 + tb * t,
+                           z0 + ta * r + 0.9, z0 + ta * r + 1.0, "steel", col, mw)
+        cutter = new_object(f"{name}_tunnel_cutter", bm, None, col)
+        cutter.matrix_world = mw
+        cutter.hide_render = True
+        cutter.display_type = "WIRE"
+        bo = conc.modifiers.new("tunnels", "BOOLEAN")
+        bo.operation = "DIFFERENCE"
+        bo.object = cutter
+        bo.solver = "EXACT"
+
+    # Seat runs between aisles; inside a tunnel's width only the rows outside the tunnel
+    edges = [x0 + margin] + [e for ax in aisles for e in (ax - aw / 2, ax + aw / 2)] + [x1 - margin]
+    count = 0
+    k = 0
+    for i in range(0, len(edges), 2):
+        xa, xb = edges[i], edges[i + 1]
+        cuts = [tx for tx in tunnels if xa < tx < xb]
+        pos = xa
+        for tx in cuts:
+            count += seat_block(f"{name}_seats{k}", pos, tx - tw / 2, 0, rows, tier, col, seat_mesh, seat_mat, mw); k += 1
+            count += seat_block(f"{name}_seats{k}", tx - tw / 2, tx + tw / 2, 0, ta, tier, col, seat_mesh, seat_mat, mw); k += 1
+            count += seat_block(f"{name}_seats{k}", tx - tw / 2, tx + tw / 2, tb, rows, tier, col, seat_mesh, seat_mat, mw); k += 1
+            pos = tx + tw / 2
+        count += seat_block(f"{name}_seats{k}", pos, xb, 0, rows, tier, col, seat_mesh, seat_mat, mw); k += 1
+
+    # Block letters above the top row (S8 IMG_0840), on small yellow plaques
+    for letter, v in tier.get("block_labels", {}).items():
+        lx = local_x(stand, v)
+        yb = y0 + rows * t
+        zt = z0 + (rows - 1) * r + 2.6
+        box_object(f"{name}_plaque_{letter}", lx - 0.35, lx + 0.35, yb - 0.06, yb - 0.02,
+                   zt - 0.1, zt + 0.7, "banner_yellow", col, mw)
+        cu = bpy.data.curves.new(f"label_{letter}", "FONT")
+        cu.body = letter
+        cu.size = 0.6
+        cu.align_x = "CENTER"
+        cu.materials.append(MATS["steel"])
+        tx_ob = bpy.data.objects.new(f"{name}_label_{letter}", cu)
+        col.objects.link(tx_ob)
+        tx_ob.matrix_world = mw @ Matrix.Translation((lx, yb - 0.07, zt)) @ Matrix.Rotation(math.pi / 2, 4, "X")
+    return count
 
 
 def add_blocks(key, blocks, x0, x1, col, mw):
@@ -444,7 +630,7 @@ def build_stand(key, stand, col, seat_mesh, seat_mats):
     seats_total = 0
     for i, tier in enumerate(stand["tiers"]):
         seats_total += build_tier(f"{key}_t{i}", tier, x0, x1, col, seat_mesh,
-                                  seat_mats[tier["colour"]], mw)
+                                  seat_mats[tier["colour"]], mw, stand)
 
     t0 = stand["tiers"][0]
     box_object(f"{key}_front_wall", x0, x1, t0["y0"] - 0.3, t0["y0"], 0, t0["z0"] + 0.6,
@@ -514,8 +700,8 @@ def build_corners(col):
     box_object("nw_glass_roof", -66.2, -43.8, 51.8, 73.7, 17.0, 17.4, "roof_top", col)
 
 
-def build_south(col):
-    """2020 design (S3), provisional. Plus the corner masts and screen still standing (S7)."""
+def build_south_provisional(col):
+    """2020 design (S3), provisional."""
     s = SOUTH
     front = -s["front"]
     half = s["length"] / 2
@@ -538,13 +724,141 @@ def build_south(col):
         box_object(f"south_terrace_{i}", -tl, tl, y_a - s["terrace_depth"] / steps, y_a, 0, z,
                    "provisional", col)
 
-    # Floodlight masts at the two south corners (S7). Height EST ~35 m
+
+
+def build_south_current(col):
+    """Zuid as it stands since the June 2026 demolition (S8 IMG_0835): an empty site behind a
+    black screen on poles, a tower crane at the south-east corner. Sizes EST from the photo."""
+    # black screen behind the south goal line, ~4 m high, with taller poles
+    box_object("south_screen", -40.0, 34.0, -58.4, -58.2, 0.0, 4.0, "hoarding", col)
+    bm = bmesh.new()
+    u = -40.0
+    while u <= 34.0:
+        add_box(bm, u - 0.12, u + 0.12, -58.6, -58.4, 0.0, 9.0)
+        u += 7.4
+    new_object("south_screen_poles", bm, "steel", col)
+    # building site
+    box_object("south_site", -45.0, 40.0, -85.0, -58.6, -0.01, 0.02, "site", col)
+    # tower crane (S8): mast ~45 m, jib towards the west across the south end. EST
+    cx, cy = 28.0, -70.0
+    box_object("crane_mast", cx - 1.0, cx + 1.0, cy - 1.0, cy + 1.0, 0.0, 44.0, "crane_yellow", col)
+    box_object("crane_cab", cx - 1.4, cx + 1.4, cy - 1.4, cy + 1.4, 44.0, 47.0, "fascia_white", col)
+    box_object("crane_jib", cx - 55.0, cx + 1.0, cy - 0.7, cy + 0.7, 46.0, 48.0, "crane_red", col)
+    box_object("crane_counterjib", cx + 1.0, cx + 16.0, cy - 0.8, cy + 0.8, 46.0, 47.4, "crane_red", col)
+    box_object("crane_hook", cx - 30.1, cx - 29.9, cy - 0.05, cy + 0.05, 12.0, 46.0, "steel", col)
+
+
+def build_neighbourhood(col):
+    """Terraced houses beyond the railway to the south (S8 IMG_0835, S1). Generic, EST."""
+    import random
+    rnd = random.Random(7)
+    for row, (y_front, depth) in enumerate(((-96.0, 9.0), (-122.0, 9.0), (-148.0, 9.0))):
+        u = -110.0
+        while u < 110.0:
+            w = rnd.choice((24.0, 30.0, 36.0))
+            eave = rnd.choice((5.6, 6.0, 6.4))
+            ridge = eave + rnd.choice((3.0, 3.6))
+            y0, y1 = y_front - depth, y_front
+            box_object(f"house_{row}_{int(u)}", u, u + w - 2.0, y0, y1, 0, eave, "house_brick", col)
+            prism_object(f"roof_{row}_{int(u)}", [(y0 - 0.3, eave), (y1 + 0.3, eave),
+                         ((y0 + y1) / 2, ridge)], u - 0.2, u + w - 1.8, "house_roof", col)
+            u += w + rnd.choice((4.0, 8.0, 12.0))
+
+
+def build_south(col, mode):
+    if mode == "provisional":
+        build_south_provisional(col)
+    else:
+        build_south_current(col)
+    build_neighbourhood(col)
+
+
+def build_south_fixtures(col):
+    # Floodlight masts at the two south corners, still standing (S7, S8). Height EST ~35 m
     for name, x, y in (("mast_se", 44.0, -64.0), ("mast_sw", -46.0, -66.0)):
         box_object(name, x - 0.4, x + 0.4, y - 0.4, y + 0.4, 0, 35.0, "steel", col)
         box_object(name + "_head", x - 2.0, x + 2.0, y - 0.3, y + 0.3, 33.0, 37.0, "lamp", col)
     # Video screen at the south end of Oost (S7). Size EST
     box_object("screen_frame", 30.0, 40.0, -61.0, -60.3, 7.0, 13.0, "steel", col)
     box_object("screen", 30.4, 39.6, -60.35, -60.25, 7.4, 12.6, "screen", col)
+
+
+# ---------------------------------------------------------------------------
+# Advertising inventory (S8 IMG_0841: printed boards on the stand front walls, LED in front)
+# ---------------------------------------------------------------------------
+
+SLOTS = []  # (slot_id, kind, location, width_m, height_m)
+
+
+def slot_material(cfg, slot, kind):
+    ads = cfg.get("ads", {})
+    path = ads.get("assign", {}).get(slot) or os.path.join(ads.get("folder", "adslots"), f"{slot}.png")
+    strength = ads.get("led_strength", 1.2) if kind == "led" else 0.0
+    if os.path.exists(path):
+        return make_image_material(path, strength)
+    return MATS["steel"]
+
+
+def build_ads(cfg, col):
+    hl, hw = PITCH_LENGTH / 2, PITCH_WIDTH / 2
+    o, h = AD_BOARD_OFFSET, AD_BOARD_HEIGHT
+    tile = cfg.get("ads", {}).get("led_tile_m", 10.0)
+
+    # LED faces, one tiled artwork per run. Corners run left to right as seen from the pitch.
+    runs = [
+        ("LED-W", (-hw - o + 0.01, -hl + 2, 0), (-hw - o + 0.01, hl - 2, 0)),
+        ("LED-E", (hw + o - 0.01, hl - 2, 0), (hw + o - 0.01, -hl + 2, 0)),
+        ("LED-N1", (-hw + 2, hl + o - 0.01, 0), (-6, hl + o - 0.01, 0)),
+        ("LED-N2", (6, hl + o - 0.01, 0), (hw - 2, hl + o - 0.01, 0)),
+        ("LED-S1", (hw - 2, -hl - o + 0.01, 0), (6, -hl - o + 0.01, 0)),
+        ("LED-S2", (-6, -hl - o + 0.01, 0), (-hw + 2, -hl - o + 0.01, 0)),
+    ]
+    for slot, a, b in runs:
+        L = (Vector(b) - Vector(a)).length
+        SLOTS.append((slot, "led", "perimeter LED", round(L, 1), h))
+        led_slot = slot.rstrip("12")
+        quad_object(slot, [a, b, (b[0], b[1], h), (a[0], a[1], h)],
+                    slot_material(cfg, led_slot, "led"), col, u_repeat=L / tile)
+
+    # Printed boards on the front walls: 6 m panels (EST, typical widths in IMG_0841)
+    walls = {"east": ("ST-E", 0.9), "west": ("ST-W", 1.0), "north": ("ST-N", 1.0)}
+    for key, (prefix, bh) in walls.items():
+        stand = STANDS[key]
+        mw = stand_matrix(stand)
+        x0, x1 = local_x_range(stand)
+        t0 = stand["tiers"][0]
+        yf = t0["y0"] - 0.32
+        ztop = t0["z0"] + 0.6
+        n = int((x1 - x0) // 6.0)
+        w = (x1 - x0) / n
+        for i in range(n):
+            slot = f"{prefix}-{i + 1:02d}"
+            xa, xb = x0 + i * w + 0.05, x0 + (i + 1) * w - 0.05
+            SLOTS.append((slot, "board", f"{key} front wall", round(xb - xa, 2), bh))
+            quad_object(slot, [(xa, yf, ztop - bh), (xb, yf, ztop - bh), (xb, yf, ztop), (xa, yf, ztop)],
+                        slot_material(cfg, slot, "board"), col, mw=mw)
+
+    # Oost back fascia between the roof columns (DMM.com today, S7/S8): 12 bays
+    stand = STANDS["east"]
+    mw = stand_matrix(stand)
+    x0, x1 = local_x_range(stand)
+    n = 12
+    w = (x1 - x0) / n
+    for i in range(n):
+        slot = f"FA-E-{i + 1:02d}"
+        xa, xb = x0 + i * w + 0.2, x0 + (i + 1) * w - 0.2
+        SLOTS.append((slot, "fascia", "east back fascia", round(xb - xa, 2), 1.2))
+        quad_object(slot, [(xa, 20.58, 15.3), (xb, 20.58, 15.3), (xb, 20.58, 16.5), (xa, 20.58, 16.5)],
+                    slot_material(cfg, slot, "fascia"), col, mw=mw)
+
+
+def write_inventory(path):
+    import csv
+    with open(path, "w", newline="") as f:
+        wr = csv.writer(f)
+        wr.writerow(["slot", "kind", "location", "width_m", "height_m"])
+        for row in SLOTS:
+            wr.writerow(row)
 
 
 # ---------------------------------------------------------------------------
@@ -656,8 +970,11 @@ def main():
 
     seat_mats = {}
     for key, spec in cfg["stand_seat_colours"].items():
-        seat_mats[key] = make_mosaic(f"seats_{key}", colours[spec["base"]],
-                                     colours[spec["accent"]], spec["accent_share"])
+        if spec.get("pattern"):
+            seat_mats[key] = make_pattern(f"seats_{key}", colours[spec["base"]], colours[spec["accent"]])
+        else:
+            seat_mats[key] = make_mosaic(f"seats_{key}", colours[spec["base"]],
+                                         colours[spec["accent"]], spec["accent_share"])
 
     col = bpy.data.collections.new("stadium")
     sc.collection.children.link(col)
@@ -665,9 +982,14 @@ def main():
     seat_mesh = make_seat_mesh()
     seats = sum(build_stand(k, s, col, seat_mesh, seat_mats) for k, s in STANDS.items())
     build_corners(col)
-    build_south(col)
+    build_south(col, cfg.get("south_mode", "current"))
+    build_south_fixtures(col)
+    build_ads(cfg, col)
+    ads_dir = cfg.get("ads", {}).get("folder", "adslots")
+    os.makedirs(ads_dir, exist_ok=True)
+    write_inventory(os.path.join(ads_dir, "inventory.csv"))
     setup_world(cfg)
-    print(f"[build] seats modelled (no aisles yet): {seats}")
+    print(f"[build] seats modelled: {seats}; ad slots: {len(SLOTS)}")
     for p in check_scene():
         print("[check]", p)
 

@@ -25,14 +25,23 @@
     "led_board": "#5B6488",
     "screen_glow": "#20304A",
     "sky_top": "#5E8FCF",
-    "sky_horizon": "#CFDDEA"
+    "sky_horizon": "#CFDDEA",
+    "stair": "#E8B400",
+    "tunnel_dark": "#1A1C20",
+    "hoarding": "#1B1C1E",
+    "site": "#8C8578",
+    "crane_yellow": "#E8A317",
+    "crane_red": "#C8282E",
+    "house_brick": "#8E5A43",
+    "house_roof": "#4A4C52"
   },
   "_seat_note": "S7 photos: every stand is a yellow and blue mix. accent_share is the fraction of accent-coloured seats. EST from photos.",
   "stand_seat_colours": {
     "east": {
       "base": "seat_yellow",
       "accent": "seat_blue",
-      "accent_share": 0.3
+      "pattern": true,
+      "_note": "Approximates the designed pattern in IMG_0834 (blue shapes low and mid, sparse at the top)"
     },
     "north": {
       "base": "seat_yellow",
@@ -236,6 +245,49 @@
         1008
       ],
       "_note": "Hand-aimed (no solve: few pitch markings visible)."
+    },
+    "west_R1_row3": {
+      "_note": "West lower tier, block R1 row 3 at the halfway line: shows the Oost boards and LED.",
+      "type": "seat",
+      "stand": "west",
+      "tier": 0,
+      "row": 3,
+      "along": -2,
+      "target": [
+        36,
+        -6,
+        2.5
+      ],
+      "lens_mm": 26
+    },
+    "south_end_from_west": {
+      "_note": "West balcony looking at the south end, like IMG_0835 (S8).",
+      "type": "seat",
+      "stand": "west",
+      "tier": 1,
+      "row": 3,
+      "along": -30,
+      "target": [
+        0,
+        -75,
+        8
+      ],
+      "lens_mm": 24
+    },
+    "pitchside_oost_boards": {
+      "_note": "Pitch-side along the Oost touchline, like IMG_0841 (S8): printed boards on the front wall and the LED.",
+      "type": "free",
+      "position": [
+        30.5,
+        -20,
+        1.5
+      ],
+      "target": [
+        40,
+        8,
+        1.6
+      ],
+      "lens_mm": 28
     }
   },
   "render": {
@@ -250,5 +302,14 @@
       1080
     ],
     "final_samples": 256
+  },
+  "south_mode": "current",
+  "_south_note": "'current' = empty site behind a black screen (since June 2026); 'provisional' = the 2020 ae+ design",
+  "ads": {
+    "_note": "Slot artwork lives in adslots/<SLOT>.png (placeholders from tools/make_slots.py). Point a slot at partner artwork with assign. LED runs use one tiled image per side: LED-W, LED-E, LED-N, LED-S.",
+    "folder": "adslots",
+    "led_tile_m": 10.0,
+    "led_strength": 1.2,
+    "assign": {}
   }
 }

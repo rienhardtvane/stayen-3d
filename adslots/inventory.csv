@@ -1,0 +1,66 @@
+slot,kind,location,width_m,height_m
+LED-W,led,perimeter LED,101.0,0.9
+LED-E,led,perimeter LED,101.0,0.9
+LED-N1,led,perimeter LED,26.0,0.9
+LED-N2,led,perimeter LED,26.0,0.9
+LED-S1,led,perimeter LED,26.0,0.9
+LED-S2,led,perimeter LED,26.0,0.9
+ST-E-01,board,east front wall,6.12,0.9
+ST-E-02,board,east front wall,6.12,0.9
+ST-E-03,board,east front wall,6.12,0.9
+ST-E-04,board,east front wall,6.12,0.9
+ST-E-05,board,east front wall,6.12,0.9
+ST-E-06,board,east front wall,6.12,0.9
+ST-E-07,board,east front wall,6.12,0.9
+ST-E-08,board,east front wall,6.12,0.9
+ST-E-09,board,east front wall,6.12,0.9
+ST-E-10,board,east front wall,6.12,0.9
+ST-E-11,board,east front wall,6.12,0.9
+ST-E-12,board,east front wall,6.12,0.9
+ST-E-13,board,east front wall,6.12,0.9
+ST-E-14,board,east front wall,6.12,0.9
+ST-E-15,board,east front wall,6.12,0.9
+ST-E-16,board,east front wall,6.12,0.9
+ST-E-17,board,east front wall,6.12,0.9
+ST-E-18,board,east front wall,6.12,0.9
+ST-W-01,board,west front wall,6.12,1.0
+ST-W-02,board,west front wall,6.12,1.0
+ST-W-03,board,west front wall,6.12,1.0
+ST-W-04,board,west front wall,6.12,1.0
+ST-W-05,board,west front wall,6.12,1.0
+ST-W-06,board,west front wall,6.12,1.0
+ST-W-07,board,west front wall,6.12,1.0
+ST-W-08,board,west front wall,6.12,1.0
+ST-W-09,board,west front wall,6.12,1.0
+ST-W-10,board,west front wall,6.12,1.0
+ST-W-11,board,west front wall,6.12,1.0
+ST-W-12,board,west front wall,6.12,1.0
+ST-W-13,board,west front wall,6.12,1.0
+ST-W-14,board,west front wall,6.12,1.0
+ST-W-15,board,west front wall,6.12,1.0
+ST-W-16,board,west front wall,6.12,1.0
+ST-W-17,board,west front wall,6.12,1.0
+ST-W-18,board,west front wall,6.12,1.0
+ST-N-01,board,north front wall,5.95,1.0
+ST-N-02,board,north front wall,5.95,1.0
+ST-N-03,board,north front wall,5.95,1.0
+ST-N-04,board,north front wall,5.95,1.0
+ST-N-05,board,north front wall,5.95,1.0
+ST-N-06,board,north front wall,5.95,1.0
+ST-N-07,board,north front wall,5.95,1.0
+ST-N-08,board,north front wall,5.95,1.0
+ST-N-09,board,north front wall,5.95,1.0
+ST-N-10,board,north front wall,5.95,1.0
+ST-N-11,board,north front wall,5.95,1.0
+FA-E-01,fascia,east back fascia,8.93,1.2
+FA-E-02,fascia,east back fascia,8.93,1.2
+FA-E-03,fascia,east back fascia,8.93,1.2
+FA-E-04,fascia,east back fascia,8.93,1.2
+FA-E-05,fascia,east back fascia,8.93,1.2
+FA-E-06,fascia,east back fascia,8.93,1.2
+FA-E-07,fascia,east back fascia,8.93,1.2
+FA-E-08,fascia,east back fascia,8.93,1.2
+FA-E-09,fascia,east back fascia,8.93,1.2
+FA-E-10,fascia,east back fascia,8.93,1.2
+FA-E-11,fascia,east back fascia,8.93,1.2
+FA-E-12,fascia,east back fascia,8.93,1.2
