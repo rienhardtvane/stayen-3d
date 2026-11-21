@@ -1,63 +1,105 @@
 {
   "_note": "Cameras, light and colours live here. Geometry lives in build.py with a source on every number. Units: metres. World X = across the pitch towards Oost, world Y = along the pitch towards Noord, origin = centre spot.",
-
   "colours": {
-    "turf_dark": "#2E6A2B",
-    "turf_light": "#3B7F34",
+    "turf_dark": "#3E7A2E",
+    "turf_light": "#4A8A36",
     "lines": "#F2F2F2",
     "concrete": "#A3A29D",
-    "concrete_dark": "#7D7C78",
-    "roof_top": "#D7D9DB",
-    "roof_under": "#B9BCC0",
+    "concrete_dark": "#8E8D88",
+    "roof_top": "#C9CCCF",
     "steel": "#3B3F45",
-    "glass": "#22303A",
-    "cladding": "#5A5F66",
-    "seat_yellow": "#FFD100",
-    "seat_blue": "#1F3F94",
-    "ad_board": "#151515",
+    "glass": "#2A3640",
+    "steel_glass": "#4A5560",
+    "cladding": "#B8BABB",
+    "facade": "#D3D4D0",
+    "fascia_white": "#EDEDED",
+    "brick": "#A44A2E",
+    "banner_yellow": "#F4C400",
+    "banner_blue": "#1F3F94",
+    "dugout": "#C9A227",
     "ground": "#6F6E6A",
     "provisional": "#C9B79C",
+    "seat_yellow": "#F6C700",
+    "seat_blue": "#1E3C8C",
+    "lamp_glow": "#FFF6E0",
+    "led_board": "#5B6488",
+    "screen_glow": "#20304A",
     "sky_top": "#5E8FCF",
     "sky_horizon": "#CFDDEA"
   },
-
+  "_seat_note": "S7 photos: every stand is a yellow and blue mix. accent_share is the fraction of accent-coloured seats. EST from photos.",
   "stand_seat_colours": {
-    "east": "seat_yellow",
-    "north": "seat_yellow",
-    "west_lower": "seat_blue",
-    "west_balcony": "seat_blue"
+    "east": {
+      "base": "seat_yellow",
+      "accent": "seat_blue",
+      "accent_share": 0.3
+    },
+    "north": {
+      "base": "seat_yellow",
+      "accent": "seat_blue",
+      "accent_share": 0.3
+    },
+    "west_lower": {
+      "base": "seat_blue",
+      "accent": "seat_yellow",
+      "accent_share": 0.4
+    },
+    "west_balcony": {
+      "base": "seat_blue",
+      "accent": "seat_yellow",
+      "accent_share": 0.4
+    }
   },
-
+  "lights_on": 0,
   "sun": {
     "_note": "Matchday STVV v Genk, 29 Nov 2026 13:30 CET, Sint-Truiden 50.81N 5.17E. Bearing in true degrees; build.py rotates by the pitch's 10 degree offset.",
     "azimuth_true_deg": 195,
     "elevation_deg": 16,
     "strength": 3.5
   },
-
   "cameras": {
     "overview": {
-      "_note": "Three-quarter aerial from the south-west, for checking massing against the Mapy 3D view.",
+      "_note": "Three-quarter aerial from the south-west.",
       "type": "free",
-      "position": [-120, -150, 85],
-      "target": [5, 0, 5],
+      "position": [
+        -120,
+        -150,
+        85
+      ],
+      "target": [
+        5,
+        0,
+        5
+      ],
       "lens_mm": 32
     },
     "check_mapy_from_west": {
-      "_note": "Roughly matches the Mapy.com 3D view (heading 81 true, 30 deg down, 125 m up) used as a massing reference.",
+      "_note": "Roughly matches the Mapy.com 3D view used as a massing reference (S1).",
       "type": "free",
-      "position": [-205, 3, 120],
-      "target": [5, 3, 0],
+      "position": [
+        -205,
+        3,
+        120
+      ],
+      "target": [
+        5,
+        3,
+        0
+      ],
       "lens_mm": 30
     },
     "oost_G_row14": {
-      "_note": "Block G is the 7th of 11 Oost blocks counted from the north end (A). Row 14 of 27.",
+      "_note": "Block G is the 7th of 11 Oost blocks from the north end (A). Row 14 of 27.",
       "type": "seat",
       "stand": "east",
       "tier": 0,
       "row": 14,
       "along": -14,
-      "target": [0, -4, 0],
+      "target": [
+        0,
+        -4,
+        0
+      ],
       "lens_mm": 24
     },
     "oost_K_row10_away": {
@@ -67,7 +109,11 @@
       "tier": 0,
       "row": 10,
       "along": -50,
-      "target": [0, -8, 0],
+      "target": [
+        0,
+        -8,
+        0
+      ],
       "lens_mm": 24
     },
     "west_skybox_balcony": {
@@ -77,16 +123,132 @@
       "tier": 1,
       "row": 2,
       "along": 0,
-      "target": [10, 0, 0],
+      "target": [
+        10,
+        0,
+        0
+      ],
       "lens_mm": 24
+    },
+    "_match_note": "Cameras set up to match the user's photos (S7), phone main lens = 26 mm equivalent on the long side.",
+    "match_IMG6223_west": {
+      "_note": "Solved from references/photos/IMG_6223.jpg (tools/solve_camera.py), error 2.6 px",
+      "type": "solved",
+      "position": [
+        44.04,
+        1.49,
+        3.918
+      ],
+      "R_cv": [
+        [
+          -0.010336,
+          0.999893,
+          -0.010384
+        ],
+        [
+          -0.067601,
+          -0.011059,
+          -0.997651
+        ],
+        [
+          -0.997659,
+          -0.00961,
+          0.067709
+        ]
+      ],
+      "lens_mm": 27.92,
+      "sensor_mm": 36.0,
+      "sensor_fit": "HORIZONTAL",
+      "resolution": [
+        1008,
+        756
+      ]
+    },
+    "match_IMG6935_balcony": {
+      "_note": "Solved from references/photos/IMG_6935.jpg (tools/solve_camera.py), error 5.4 px",
+      "type": "solved",
+      "position": [
+        -52.75,
+        -8.401,
+        13.426
+      ],
+      "R_cv": [
+        [
+          0.600038,
+          -0.799564,
+          -0.025532
+        ],
+        [
+          -0.172372,
+          -0.098059,
+          -0.980139
+        ],
+        [
+          0.78118,
+          0.592522,
+          -0.196661
+        ]
+      ],
+      "lens_mm": 48.81,
+      "sensor_mm": 36.0,
+      "sensor_fit": "HORIZONTAL",
+      "resolution": [
+        756,
+        1008
+      ]
+    },
+    "match_IMG6228_noord": {
+      "type": "seat",
+      "stand": "east",
+      "tier": 0,
+      "row": 4,
+      "along": 15,
+      "eye": 1.6,
+      "target": [
+        -10,
+        62,
+        8
+      ],
+      "lens_mm": 26,
+      "sensor_mm": 34.6,
+      "resolution": [
+        756,
+        1008
+      ],
+      "_note": "Hand-aimed (no solve yet)."
+    },
+    "match_IMG6220_oost": {
+      "type": "free",
+      "position": [
+        -38.5,
+        28,
+        1.6
+      ],
+      "target": [
+        34,
+        -10,
+        -5
+      ],
+      "lens_mm": 26,
+      "sensor_mm": 34.6,
+      "resolution": [
+        756,
+        1008
+      ],
+      "_note": "Hand-aimed (no solve: few pitch markings visible)."
     }
   },
-
   "render": {
     "engine": "CYCLES",
-    "draft_resolution": [960, 540],
+    "draft_resolution": [
+      960,
+      540
+    ],
     "draft_samples": 24,
-    "final_resolution": [1920, 1080],
+    "final_resolution": [
+      1920,
+      1080
+    ],
     "final_samples": 256
   }
 }

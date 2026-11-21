@@ -80,15 +80,39 @@ https://stvv.com/nl/nieuws/artikel/stayen-europaproof-v2
 - Away fans are in Oost J and K, with a new staircase. Zuid is unavailable.
 - UEFA Stadium Category 4.
 
-## Estimates still to confirm with photos
+## S7. Rienhardt's own photos (references/photos/, 12 images, 2025-2026 matchdays)
 
-| Item | Value used | How it was derived |
+Camera poses were solved from pitch markings with `tools/solve_camera.py`. The image points are in
+`references/photo_points.json`. Heights were then measured by intersecting the photo rays with
+planes at known distances.
+
+| Photo | Fit | Camera solved at | Check |
+|---|---|---|---|
+| IMG_6935 (West balcony, night) | 5.4 px, f pinned at 2050 px with the centre circle | u -52.8, v -8.4, z 13.4 | goal post tops 2.6 m (true 2.44) |
+| IMG_6223 (Oost front rows, looking at West) | 2.6 px, f 1998 px | u 44.0, v 1.5, z 3.9 | camera lands in Oost row ~5, which moved Oost's front to u 40 |
+
+Measured with them (model values in build.py, marked PH):
+- **Oost:** roof front edge 19.7 to 19.9 m at u 33. DMM fascia top 16.5 m. The front row starts at about u 40.5.
+- **NE brick tower:** top 23.5 m. Its face to the pitch runs from u ~27 to ~48.
+- **Noord:** the building top is 26.3 m, hotel windows ~24.6 m, the canopy's lower edge ~20.3 m,
+  big windows ~16.2 m, and the underside over the back rows ~13.7 m. These assume the facade sits at v 69. EST
+- **West:** roof eave 21.5 m, floodlight row 19.9 m, office box level top 20.7 m, skybox glass 14.5 to 16.7 m,
+  balcony front rail 11.5 m, banner walkway 10.9 m, lower tier front wall about 4 m.
+
+Read from the photos rather than measured: every stand is a yellow and blue seat mix. Oost has glass end
+screens and floodlights on the roof front. West has a brick tower at its north end and a steel and glass
+south end. There's a glazed block at the NW corner, floodlight masts at both south corners, and a video
+screen at the south end of Oost.
+
+The sunny photos showing the old Zuid stand (IMG_6263, IMG_6231) are from before the June 2026 demolition.
+
+## Estimates still to confirm
+
+| Item | Value used | Status |
 |---|---|---|
-| Row depth (tread) | 0.80 m | Typical for this era. Fits 27 Oost rows into the 27 m East roof depth. |
-| Oost riser | 0.38 m per row | Estimate |
-| Noord riser | 0.40 m per row | Estimate |
-| West lower riser | 0.35 m per row | Estimate |
-| Roof heights | see build.py | Estimated from row counts plus clearance |
-| West front strip W | not modelled yet | Ticketing shows it in front of V1 to T1 |
-
-**Next:** side-on photos of each stand, to measure the rake against seat size (400 mm wide shells).
+| Row depth (tread) | Oost 0.75 m, Noord 0.80 m, West 0.80 and 0.90 m | EST. Count rows on a side-on photo |
+| Risers | Oost 0.50, Noord 0.50, West 0.46 and 0.48 m | Back-solved from the measured heights above |
+| Noord facade line | v 69 | EST. A solve of IMG_6228 would fix it |
+| Pitch line width | 68 m (aerial says 65.5) | Open |
+| West front strip W, aisles, tunnels | not modelled | To do |
+| Zuid | 2020 design, provisional | Waiting on the real building |

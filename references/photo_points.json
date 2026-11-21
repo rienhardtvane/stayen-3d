@@ -1,0 +1,56 @@
+{
+  "_note": "Image points (px, in the photo as stored in references/photos) of pitch markings with known world positions (m). Measure entries give an image point and the world plane it sits on: axis 0 = u (X), axis 1 = v (Y). Picked by hand on gridded zooms.",
+
+  "IMG6935_balcony": {
+    "photo": "references/photos/IMG_6935.jpg",
+    "size": [1512, 2016],
+    "_f_note": "f pinned at 2050 px: the PnP fit is flat between 1900 and 2300, and the centre circle's left edge (observed x~1410, y~1130) projects there at f~2050. Goal post tops then solve at 2.54-2.59 m (true 2.44).",
+    "f_px": 2050,
+    "points": [
+      {"name": "goal line x goal area W", "px": [126.7, 1000], "world": [-9.16, 52.5, 0]},
+      {"name": "goal line x goal area E", "px": [500, 928], "world": [9.16, 52.5, 0]},
+      {"name": "goal line x penalty area E", "px": [666.7, 893.3], "world": [20.16, 52.5, 0]},
+      {"name": "goal area front W", "px": [226.7, 1014.7], "world": [-9.16, 47.0, 0]},
+      {"name": "goal area front E", "px": [590, 935.3], "world": [9.16, 47.0, 0]},
+      {"name": "penalty area front E", "px": [953.3, 918], "world": [20.16, 36.0, 0]},
+      {"name": "penalty area front W", "px": [173.3, 1128], "world": [-20.16, 36.0, 0]},
+      {"name": "left goal post foot", "px": [247, 973.75], "world": [-3.66, 52.5, 0]},
+      {"name": "right goal post foot", "px": [397.5, 942.5], "world": [3.66, 52.5, 0]}
+    ],
+    "measure": [
+      {"name": "check: left post top (2.44)", "px": [243.75, 906.25], "axis": 1, "value": 52.5},
+      {"name": "Oost roof front edge", "px": [900, 455], "axis": 0, "value": 33},
+      {"name": "Oost roof front edge", "px": [1400, 425], "axis": 0, "value": 33},
+      {"name": "Oost DMM fascia top", "px": [1150, 532], "axis": 0, "value": 58.1},
+      {"name": "NE tower top", "px": [800, 395], "axis": 1, "value": 55},
+      {"name": "Noord building top", "px": [200, 318], "axis": 1, "value": 69},
+      {"name": "Noord hotel windows", "px": [200, 358], "axis": 1, "value": 69},
+      {"name": "Noord canopy lower edge", "px": [200, 450], "axis": 1, "value": 66},
+      {"name": "Noord big windows", "px": [200, 548], "axis": 1, "value": 69},
+      {"name": "Noord underside over seats", "px": [200, 605], "axis": 1, "value": 69}
+    ]
+  },
+
+  "IMG6223_west": {
+    "photo": "references/photos/IMG_6223.jpg",
+    "size": [2576, 1932],
+    "points": [
+      {"name": "halfway x near (east) touchline", "px": [1013, 1908], "world": [34, 0, 0]},
+      {"name": "halfway x far (west) touchline", "px": [1275, 1203], "world": [-34, 0, 0]},
+      {"name": "halfway x centre circle near", "px": [1225, 1327], "world": [9.15, 0, 0]},
+      {"name": "halfway x centre circle far", "px": [1250, 1248], "world": [-9.15, 0, 0]},
+      {"name": "centre circle left extreme", "px": [825, 1288], "world": [0, -9.15, 0]},
+      {"name": "centre circle right extreme", "px": [1662, 1280], "world": [0, 9.15, 0]}
+    ],
+    "measure": [
+      {"name": "West roof eave", "px": [1250, 703], "axis": 0, "value": -43},
+      {"name": "West floodlight row", "px": [1250, 737], "axis": 0, "value": -42.5},
+      {"name": "West office box level top", "px": [1250, 770], "axis": 0, "value": -56},
+      {"name": "West skybox glass top", "px": [1250, 850], "axis": 0, "value": -56.5},
+      {"name": "West skybox glass bottom", "px": [1250, 892], "axis": 0, "value": -56},
+      {"name": "West balcony front rail", "px": [1250, 942], "axis": 0, "value": -51},
+      {"name": "West banner walkway", "px": [1250, 955], "axis": 0, "value": -50.5},
+      {"name": "West lower tier front wall top", "px": [1250, 1100], "axis": 0, "value": -41.5}
+    ]
+  }
+}

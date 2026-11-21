@@ -7,8 +7,8 @@ or with Blender itself:
 
 Rules this file follows:
 - 1 Blender unit = 1 metre.
-- Every dimension carries its source in a comment. S1 to S6 refer to references/sources.md.
-  "EST" marks an estimate that still has to be confirmed against photos.
+- Every dimension carries its source in a comment. S1 to S7 refer to references/sources.md.
+  "EST" marks an estimate; "PH" marks a value set by matching renders to S7 photos.
 - Cameras, light and colours come from scene.json, not from this file.
 
 World frame: origin at the centre spot. X runs across the pitch towards Oost (East),
@@ -37,50 +37,71 @@ SEAT_BACK = 0.35      # S4 CR6 backrest 35 cm
 SEAT_HEIGHT = 0.45    # S4 Daplast: seat ~45 cm above the tread
 EYE_SEATED = 1.15     # eye height of a seated adult above the seat's tread
 
-# Stands. "front" is the distance from the centre line (u or v = 0) to the stand's front
-# wall, measured outwards. Local frame per stand: x along the stand, y outwards from the
-# front wall, z up. "along" ranges are world coordinates on the axis parallel to the stand.
+# Stands. "front" is the distance from the centre line to the stand's front wall,
+# measured outwards. Local frame per stand: x along the stand, y outwards from the front
+# wall, z up. "along" ranges are world coordinates on the axis parallel to the stand.
+# "blocks" are extra boxes in the local frame: x=None means the full stand length;
+# "repeat": (width, gap) splits a block into a row of windows.
 STANDS = {
-    "east": {  # Oost, 2003 (S5)
+    "east": {  # Oost, 2003 (S5). Single tier under a sloping steel roof (S7)
         "outward": (1, 0),
-        "front": 36.0,            # S1 roof edge +33, seats start ~3 m behind it. EST
+        "front": 40.0,            # PH: IMG_6223 camera solves to row ~5 at u=44; roof edge +33 (S1)
         "along": (-60.0, 52.0),   # S1 roof extent v -60..+52
         "tiers": [
             {   # one tier, 27 rows (S2, block G)
                 "rows": 27,
-                "tread": 0.80,     # EST, fits 27 rows inside the 27 m roof depth (S1)
-                "riser": 0.38,     # EST
-                "y0": 0.5,         # EST front gangway
-                "z0": 1.2,         # EST first row above pitch level
+                "tread": 0.75,     # EST, 27 rows from u=40.5 to the S1 back line at ~60
+                "riser": 0.50,     # PH: DMM fascia top solved at 16.5 m (IMG_6935)
+                "y0": 0.5,
+                "z0": 1.3,         # S7: low front wall behind the LED boards
                 "colour": "east",
             }
         ],
-        "back": {"y": (22.1, 24.0), "z": 15.0},           # S1 roof back +60 -> local 24
-        "roof": {"y": (-3.0, 24.0), "z": 15.0, "thick": 1.0},  # S1 +33..+60; height EST
-        "blocks": [],
+        "back": {"y": (20.75, 21.5), "z": 16.5},
+        # PH: roof front edge solved at 19.7-20.0 m at u=33 (IMG_6935); rises to the back (S7)
+        "roof": {"y": (-7.0, 21.5), "z": 19.6, "thick": 0.9, "slope": 1.8},
+        "end_mat": "glass",       # S7: glazed wind screens at both ends of Oost
+        "lights": True,           # S7: floodlights along the roof front edge
+        "blocks": [
+            # strip of windows between the fascia and the roof (S7)
+            {"y": (21.2, 21.5), "z": (16.5, 19.6), "x": None, "mat": "glass"},
+            # DMM.com fascia along the back of the top row, top at 16.5 m (PH)
+            {"y": (20.6, 20.8), "z": (15.3, 16.5), "x": None, "mat": "fascia_white"},
+        ],
     },
-    "north": {  # Noord, 2009, hotel built into it (S5)
+    "north": {  # Noord, 2009, hotel built into it (S5, S7)
         "outward": (0, 1),
         "front": 55.5,            # S1 roof edge +52, goal line 52.5. EST
-        "along": (-40.0, 36.0),   # S1 north roof inner edge -43..+30; seating EST
+        "along": (-40.0, 26.5),   # PH: seats run from the NW tower to the NE brick tower (IMG_6935)
         "tiers": [
             {   # 16 rows (S2, block Y1)
                 "rows": 16,
                 "tread": 0.80,     # EST
-                "riser": 0.40,     # EST
+                "riser": 0.50,     # PH (IMG_6935, IMG_6228)
                 "y0": 0.5,
-                "z0": 1.2,
+                "z0": 3.0,         # S7: tall front wall the tifos hang from
                 "colour": "north",
             }
         ],
-        "back": {"y": (13.3, 18.0), "z": 14.0},            # S1 roof back +73.5 -> local 18
-        "roof": {"y": (-3.5, 18.0), "z": 14.0, "thick": 1.2},  # S1; height EST
+        "back": {"y": (13.3, 18.0), "z": 1.0},
+        # sloping canopy over the seats, lower edge ~19.5 m at the front, ~22.8 m at the
+        # facade (PH, IMG_6935). Reaches v=52 in the aerial (S1)
+        "roof": {"y": (-3.5, 11.0), "z": 19.4, "thick": 0.6, "slope": 3.4},
+        "end_mat": "facade",
+        "lights": True,
         "blocks": [
-            # hotel rooms overlooking the pitch (S5), glazed band above the back rows. EST
-            {"y": (13.3, 13.6), "z": (8.4, 13.4), "x": None, "mat": "glass"},
+            # building behind and over the back rows (S5, S7); underside 13.8 m (PH)
+            {"y": (13.3, 18.0), "z": (0.0, 26.5), "x": None, "mat": "facade"},
+            {"y": (11.0, 13.3), "z": (13.8, 26.5), "x": None, "mat": "facade"},
+            # big windows of the hospitality floor, 15.2-17.6 m (PH)
+            {"y": (10.85, 11.0), "z": (15.2, 17.6), "x": None, "mat": "glass"},
+            # hotel rooms in the top storey, 23.9-25.4 m (PH)
+            {"y": (10.85, 11.0), "z": (23.9, 25.4), "x": None, "mat": "glass",
+             "repeat": (1.6, 2.4)},
+            {"y": (11.0, 18.0), "z": (26.5, 26.9), "x": None, "mat": "roof_top"},
         ],
     },
-    "west": {  # main stand, 2014 (S5)
+    "west": {  # main stand, 2014 (S5). Curved roof, two box levels (S7)
         "outward": (-1, 0),
         "front": 41.5,            # S1 roof edge -43; wide technical area in front. EST
         "along": (-62.0, 50.0),   # S1 roof extent v -62..+50
@@ -88,28 +109,38 @@ STANDS = {
             {   # lower tier, 10 rows (S2, block R1)
                 "rows": 10,
                 "tread": 0.80,     # EST
-                "riser": 0.35,     # EST
+                "riser": 0.46,     # PH (IMG_6223): top row ~7.5 m
                 "y0": 0.5,
-                "z0": 1.5,
+                "z0": 3.4,         # PH: front wall top solved at ~4 m (IMG_6223)
                 "colour": "west_lower",
             },
-            {   # hospitality balcony in front of the skyboxes, about 6 rows (S2)
+            {   # hospitality balcony in front of the skyboxes, about 6 rows (S2, S7)
                 "rows": 6,
-                "tread": 0.85,     # EST
-                "riser": 0.40,     # EST
-                "y0": 9.5,
-                "z0": 6.6,
+                "tread": 0.90,     # EST
+                "riser": 0.48,     # PH
+                "y0": 9.8,
+                "z0": 10.4,        # PH: front rail 11.5 m (IMG_6223); photographer eye 13.5 m (IMG_6935)
                 "colour": "west_balcony",
             },
         ],
-        "back": {"y": (15.0, 24.5), "z": 18.0},             # S1 roof back -66 -> local 24.5
-        "roof": {"y": (1.5, 24.5), "z": 18.0, "thick": 1.5},  # S1 -43..-66; height EST
+        "back": {"y": (15.3, 24.5), "z": 21.4},
+        # PH: eave 21.4 m, floodlight row 19.8 m (IMG_6223). Curved (S7)
+        "roof": {"y": (1.0, 24.5), "z": 21.4, "thick": 0.8, "arc": 1.5},
+        "end_mat": "steel_glass",
+        "lights": True,
         "blocks": [
-            # skybox and office box glazing, two levels (S2: 21 skyboxes, 19 office boxes)
-            {"y": (14.9, 15.1), "z": (9.2, 12.4), "x": None, "mat": "glass"},
-            {"y": (14.9, 15.1), "z": (13.2, 16.6), "x": None, "mat": "glass"},
-            # rear building with the solar roof, to -87 (S1). Height EST.
+            # lounge glazing under the yellow banner walkway (PH 8.6-9.6 m, 9.6-10.4 m)
+            {"y": (8.9, 9.8), "z": (0.0, 8.6), "x": None, "mat": "concrete_dark"},
+            {"y": (9.0, 9.1), "z": (8.6, 9.6), "x": None, "mat": "glass"},
+            {"y": (9.0, 9.8), "z": (9.6, 10.4), "x": None, "mat": "banner_yellow"},
+            # skybox level 14.4-16.6 m and office box level 17.4-20.4 m (PH, IMG_6223)
+            {"y": (15.2, 15.4), "z": (14.4, 16.6), "x": None, "mat": "glass"},
+            {"y": (15.2, 15.4), "z": (16.6, 17.4), "x": None, "mat": "facade"},
+            {"y": (15.2, 15.4), "z": (17.4, 20.4), "x": None, "mat": "glass"},
+            # rear building with the solar roof, to -87 (S1). Height EST
             {"y": (24.5, 45.5), "z": (0.0, 12.0), "x": None, "mat": "cladding"},
+            # brick stair and lift tower at the north end (S7)
+            {"y": (12.0, 26.0), "z": (0.0, 22.5), "x": (42.0, 50.0), "mat": "brick"},
         ],
     },
 }
@@ -133,7 +164,7 @@ AD_BOARD_HEIGHT = 0.9   # EST
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Materials
 # ---------------------------------------------------------------------------
 
 def srgb_to_linear(c):
@@ -148,7 +179,7 @@ def hex_to_linear(h):
 MATS = {}
 
 
-def make_material(name, hex_colour, roughness=0.7, metallic=0.0, transmission=0.0):
+def make_material(name, hex_colour, roughness=0.7, metallic=0.0):
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     bsdf = m.node_tree.nodes.get("Principled BSDF")
@@ -159,6 +190,49 @@ def make_material(name, hex_colour, roughness=0.7, metallic=0.0, transmission=0.
     MATS[name] = m
     return m
 
+
+def make_emissive(name, hex_colour, strength):
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    bsdf = nt.nodes.get("Principled BSDF")
+    bsdf.inputs["Base Color"].default_value = hex_to_linear(hex_colour)
+    bsdf.inputs["Emission Color"].default_value = hex_to_linear(hex_colour)
+    bsdf.inputs["Emission Strength"].default_value = strength
+    MATS[name] = m
+    return m
+
+
+def make_mosaic(name, base_hex, accent_hex, accent_share):
+    """Seats in a random yellow/blue mix, one colour per seat (S7 photos)."""
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    bsdf = nt.nodes.get("Principled BSDF")
+    bsdf.inputs["Roughness"].default_value = 0.5
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    snap = nt.nodes.new("ShaderNodeVectorMath")
+    snap.operation = "SNAP"
+    snap.inputs[1].default_value = (0.5, 0.5, 0.4)  # roughly one cell per seat
+    noise = nt.nodes.new("ShaderNodeTexWhiteNoise")
+    noise.noise_dimensions = "3D"
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.interpolation = "CONSTANT"
+    ramp.color_ramp.elements[0].color = hex_to_linear(base_hex)
+    ramp.color_ramp.elements[1].position = 1.0 - accent_share
+    ramp.color_ramp.elements[1].color = hex_to_linear(accent_hex)
+    nt.links.new(geo.outputs["Position"], snap.inputs[0])
+    nt.links.new(snap.outputs["Vector"], noise.inputs["Vector"])
+    nt.links.new(noise.outputs["Value"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+    m.diffuse_color = hex_to_linear(base_hex)
+    MATS[name] = m
+    return m
+
+
+# ---------------------------------------------------------------------------
+# Mesh helpers
+# ---------------------------------------------------------------------------
 
 def new_object(name, bm, mat=None, collection=None):
     me = bpy.data.meshes.new(name)
@@ -179,10 +253,30 @@ def add_box(bm, x0, x1, y0, y1, z0, z1):
         v.co.z = z0 if v.co.z < 0 else z1
 
 
-def box_object(name, x0, x1, y0, y1, z0, z1, mat, collection=None):
+def box_object(name, x0, x1, y0, y1, z0, z1, mat, collection=None, mw=None):
     bm = bmesh.new()
     add_box(bm, x0, x1, y0, y1, z0, z1)
-    return new_object(name, bm, mat, collection)
+    ob = new_object(name, bm, mat, collection)
+    if mw is not None:
+        ob.matrix_world = mw
+    return ob
+
+
+def prism_object(name, profile, x0, x1, mat, collection, mw=None):
+    """Extrude a closed (y, z) profile along x from x0 to x1."""
+    bm = bmesh.new()
+    a = [bm.verts.new((x0, y, z)) for y, z in profile]
+    b = [bm.verts.new((x1, y, z)) for y, z in profile]
+    bm.faces.new(list(reversed(a)))
+    bm.faces.new(b)
+    n = len(profile)
+    for i in range(n):
+        j = (i + 1) % n
+        bm.faces.new((a[i], a[j], b[j], b[i]))
+    ob = new_object(name, bm, mat, collection)
+    if mw is not None:
+        ob.matrix_world = mw
+    return ob
 
 
 def stand_matrix(stand):
@@ -196,7 +290,6 @@ def local_x(stand, along_world):
     """World coordinate along the stand -> the stand's local x."""
     ox, oy = stand["outward"]
     ax, ay = oy, -ox  # local x axis in world (keeps a right-handed frame)
-    # along_world is v for east/west stands and u for north/south stands
     p = (0.0, along_world) if ox != 0 else (along_world, 0.0)
     return p[0] * ax + p[1] * ay
 
@@ -211,20 +304,17 @@ def local_x_range(stand):
 # ---------------------------------------------------------------------------
 
 def build_pitch(col):
-    # Ground and apron
     box_object("ground", -250, 250, -250, 250, -0.2, -0.01, "ground", col)
     box_object("apron", APRON["x"][0], APRON["x"][1], APRON["y"][0], APRON["y"][1],
                -0.01, 0.0, "turf_dark", col)
-    # Mowing stripes, 12 across the length (cosmetic)
-    n = 12
+    n = 12  # mowing-style stripes (the artificial turf is laid in strips, S7)
     L, W = PITCH_LENGTH, PITCH_WIDTH
     for i in range(n):
         y0 = -L / 2 + i * L / n
         box_object(f"stripe_{i:02d}", -W / 2, W / 2, y0, y0 + L / n, 0.0, 0.005,
                    "turf_light" if i % 2 else "turf_dark", col)
 
-    # Lines, 12 cm wide (Laws of the Game max 12 cm)
-    lw = 0.12
+    lw = 0.12  # Laws of the Game: lines max 12 cm
     z0, z1 = 0.005, 0.012
     bm = bmesh.new()
 
@@ -235,19 +325,17 @@ def build_pitch(col):
             add_box(bm, min(xa, xb), max(xa, xb), ya - lw / 2, ya + lw / 2, z0, z1)
 
     hl, hw = L / 2, W / 2
-    line(-hw, -hl, -hw, hl); line(hw, -hl, hw, hl)        # touchlines
-    line(-hw, -hl, hw, -hl); line(-hw, hl, hw, hl)        # goal lines
-    line(-hw, 0, hw, 0)                                    # halfway line
+    line(-hw, -hl, -hw, hl); line(hw, -hl, hw, hl)
+    line(-hw, -hl, hw, -hl); line(-hw, hl, hw, hl)
+    line(-hw, 0, hw, 0)
     for s in (-1, 1):
         g = s * hl
-        # penalty area 40.32 x 16.5, goal area 18.32 x 5.5 (Laws of the Game)
         line(-20.16, g, -20.16, g - s * 16.5); line(20.16, g, 20.16, g - s * 16.5)
         line(-20.16, g - s * 16.5, 20.16, g - s * 16.5)
         line(-9.16, g, -9.16, g - s * 5.5); line(9.16, g, 9.16, g - s * 5.5)
         line(-9.16, g - s * 5.5, 9.16, g - s * 5.5)
     new_object("lines", bm, "lines", col)
 
-    # Centre circle r 9.15 and penalty arcs (outside the area only)
     def ring(name, cx, cy, r, a0=0.0, a1=2 * math.pi, seg=96):
         bm = bmesh.new()
         prev = None
@@ -265,7 +353,6 @@ def build_pitch(col):
     ring("arc_south", 0, -hl + 11.0, 9.15, math.pi / 2 - arc, math.pi / 2 + arc, 32)
     ring("arc_north", 0, hl - 11.0, 9.15, -math.pi / 2 - arc, -math.pi / 2 + arc, 32)
 
-    # Goals: 7.32 x 2.44, posts 12 cm (Laws of the Game)
     for s in (-1, 1):
         g = s * hl
         bm = bmesh.new()
@@ -275,9 +362,8 @@ def build_pitch(col):
         add_box(bm, -3.66 - p, 3.66 + p, g - p / 2, g + p / 2, 2.44, 2.44 + p)
         new_object(f"goal_{'n' if s > 0 else 's'}", bm, "lines", col)
 
-    # LED perimeter boards
-    o = AD_BOARD_OFFSET
-    h = AD_BOARD_HEIGHT
+    # LED perimeter boards (S7: continuous LED along both touchlines and the goal lines)
+    o, h = AD_BOARD_OFFSET, AD_BOARD_HEIGHT
     bm = bmesh.new()
     add_box(bm, -hw - o - 0.2, -hw - o, -hl + 2, hl - 2, 0, h)
     add_box(bm, hw + o, hw + o + 0.2, -hl + 2, hl - 2, 0, h)
@@ -285,48 +371,38 @@ def build_pitch(col):
     add_box(bm, 6, hw - 2, hl + o, hl + o + 0.2, 0, h)
     add_box(bm, -hw + 2, -6, -hl - o - 0.2, -hl - o, 0, h)
     add_box(bm, 6, hw - 2, -hl - o - 0.2, -hl - o, 0, h)
-    new_object("led_boards", bm, "ad_board", col)
+    new_object("led_boards", bm, "led", col)
+
+    # Dugouts at the halfway line in front of West (S6: 27 seats each; S7 photos)
+    for name, v0, v1 in (("dugout_home", 3.0, 12.0), ("dugout_away", -12.0, -3.0)):
+        box_object(name, -hw - 3.4, -hw - 1.6, v0, v1, 0, 1.9, "dugout", col)
 
 
 def make_seat_mesh():
-    """One CR6-sized seat (S4): a 400 mm shell with a 350 mm backrest, sitting 450 mm above the tread."""
+    """One CR6-sized seat (S4): a 400 mm shell with a 350 mm backrest, 450 mm above the tread."""
     bm = bmesh.new()
     w = SEAT_WIDTH
-    add_box(bm, -w / 2, w / 2, -0.20, 0.16, SEAT_HEIGHT - 0.05, SEAT_HEIGHT)          # pan
-    add_box(bm, -w / 2, w / 2, 0.14, 0.19, SEAT_HEIGHT, SEAT_HEIGHT + SEAT_BACK)        # backrest
-    add_box(bm, -0.03, 0.03, -0.05, 0.05, 0.0, SEAT_HEIGHT - 0.05)                      # pedestal
+    add_box(bm, -w / 2, w / 2, -0.20, 0.16, SEAT_HEIGHT - 0.05, SEAT_HEIGHT)
+    add_box(bm, -w / 2, w / 2, 0.14, 0.19, SEAT_HEIGHT, SEAT_HEIGHT + SEAT_BACK)
+    add_box(bm, -0.03, 0.03, -0.05, 0.05, 0.0, SEAT_HEIGHT - 0.05)
     me = bpy.data.meshes.new("seat_cr6")
     bm.to_mesh(me)
     bm.free()
-    me.materials.append(None)  # one slot; each seat block sets its own colour
+    me.materials.append(None)  # one slot; each seat block sets its own material
     return me
 
 
 def build_tier(name, tier, x0, x1, col, seat_mesh, seat_mat, mw):
     t, r, rows = tier["tread"], tier["riser"], tier["rows"]
     y0, z0 = tier["y0"], tier["z0"]
-
-    # Stepped concrete profile in (y, z), extruded along x
     prof = [(y0, 0.0), (y0, z0)]
     for i in range(rows):
         z = z0 + i * r
         prof.append((y0 + (i + 1) * t, z))
         if i < rows - 1:
             prof.append((y0 + (i + 1) * t, z + r))
-    y_end = y0 + rows * t
-    prof.append((y_end, 0.0))
-
-    bm = bmesh.new()
-    a = [bm.verts.new((x0, y, z)) for y, z in prof]
-    b = [bm.verts.new((x1, y, z)) for y, z in prof]
-    bm.faces.new(list(reversed(a)))
-    bm.faces.new(b)
-    n = len(prof)
-    for i in range(n):
-        j = (i + 1) % n
-        bm.faces.new((a[i], a[j], b[j], b[i]))
-    ob = new_object(f"{name}_concrete", bm, "concrete", col)
-    ob.matrix_world = mw
+    prof.append((y0 + rows * t, 0.0))
+    prism_object(f"{name}_concrete", prof, x0, x1, "concrete", col, mw)
 
     # Seats: one seat mesh, arrayed along the row and up the rows (instanced, not copied)
     margin = 0.6
@@ -334,77 +410,115 @@ def build_tier(name, tier, x0, x1, col, seat_mesh, seat_mat, mw):
     seats = bpy.data.objects.new(f"{name}_seats", seat_mesh)
     col.objects.link(seats)
     seats.matrix_world = mw @ Matrix.Translation((x0 + margin, y0 + 0.55 * t, z0))
-    m1 = seats.modifiers.new("along_row", "ARRAY")
-    m1.use_relative_offset = False
-    m1.use_constant_offset = True
-    m1.constant_offset_displace = (SEAT_PITCH, 0, 0)
-    m1.count = count
-    m2 = seats.modifiers.new("up_rows", "ARRAY")
-    m2.use_relative_offset = False
-    m2.use_constant_offset = True
-    m2.constant_offset_displace = (0, t, r)
-    m2.count = rows
-    # material per object (the slot links to the object, so the seat mesh stays shared)
+    for mod_name, off, cnt in (("along_row", (SEAT_PITCH, 0, 0), count), ("up_rows", (0, t, r), rows)):
+        m = seats.modifiers.new(mod_name, "ARRAY")
+        m.use_relative_offset = False
+        m.use_constant_offset = True
+        m.constant_offset_displace = off
+        m.count = cnt
     seats.material_slots[0].link = "OBJECT"
     seats.material_slots[0].material = seat_mat
     return count * rows
 
 
-def build_stand(key, stand, col, seat_mesh, seat_colours):
+def add_blocks(key, blocks, x0, x1, col, mw):
+    for i, b in enumerate(blocks):
+        bx0, bx1 = b["x"] if b["x"] else (x0, x1)
+        if b.get("repeat"):
+            w, gap = b["repeat"]
+            bm = bmesh.new()
+            x = bx0 + gap / 2
+            while x + w <= bx1:
+                add_box(bm, x, x + w, b["y"][0], b["y"][1], b["z"][0], b["z"][1])
+                x += w + gap
+            ob = new_object(f"{key}_block{i}", bm, b["mat"], col)
+            ob.matrix_world = mw
+        else:
+            box_object(f"{key}_block{i}", bx0, bx1, b["y"][0], b["y"][1], b["z"][0], b["z"][1],
+                       b["mat"], col, mw)
+
+
+def build_stand(key, stand, col, seat_mesh, seat_mats):
     mw = stand_matrix(stand)
     x0, x1 = local_x_range(stand)
     seats_total = 0
     for i, tier in enumerate(stand["tiers"]):
-        seat_mat = MATS[seat_colours[tier["colour"]]]
-        seats_total += build_tier(f"{key}_t{i}", tier, x0, x1, col, seat_mesh, seat_mat, mw)
+        seats_total += build_tier(f"{key}_t{i}", tier, x0, x1, col, seat_mesh,
+                                  seat_mats[tier["colour"]], mw)
 
-    # Front wall (pitch side), 0.3 m thick, up to the first row
     t0 = stand["tiers"][0]
-    ob = box_object(f"{key}_front_wall", x0, x1, t0["y0"] - 0.3, t0["y0"], 0, t0["z0"] + 0.6,
-                    "concrete_dark", col)
-    ob.matrix_world = mw
-
-    # Back structure and cladding
+    box_object(f"{key}_front_wall", x0, x1, t0["y0"] - 0.3, t0["y0"], 0, t0["z0"] + 0.6,
+               "concrete_dark", col, mw)
     by0, by1 = stand["back"]["y"]
-    ob = box_object(f"{key}_back", x0, x1, by0, by1, 0, stand["back"]["z"], "cladding", col)
-    ob.matrix_world = mw
-    # side walls closing each end
+    box_object(f"{key}_back", x0, x1, by0, by1, 0, stand["back"]["z"], "cladding", col, mw)
+
+    roof = stand["roof"]
+    ry0, ry1 = roof["y"]
+    rz, th = roof["z"], roof["thick"]
     for xa, xb in ((x0 - 0.3, x0), (x1, x1 + 0.3)):
-        ob = box_object(f"{key}_end", xa, xb, t0["y0"] - 0.3, by1, 0, stand["roof"]["z"],
-                        "cladding", col)
-        ob.matrix_world = mw
+        box_object(f"{key}_end", xa, xb, t0["y0"] - 0.3, by1, 0, rz, stand["end_mat"], col, mw)
 
-    # Roof slab with a front fascia
-    ry0, ry1 = stand["roof"]["y"]
-    rz, th = stand["roof"]["z"], stand["roof"]["thick"]
-    ob = box_object(f"{key}_roof", x0 - 0.3, x1 + 0.3, ry0, ry1, rz, rz + th, "roof_top", col)
-    ob.matrix_world = mw
-    ob = box_object(f"{key}_fascia", x0 - 0.3, x1 + 0.3, ry0, ry0 + 0.4, rz - 0.8, rz + th + 0.2,
-                    "steel", col)
-    ob.matrix_world = mw
+    # Roof: flat with a slope (rises towards the back) or curved ("arc")
+    n = 16
+    top, bot = [], []
+    for i in range(n + 1):
+        f = i / n
+        y = ry0 + (ry1 - ry0) * f
+        lift = roof.get("slope", 0.0) * f + roof.get("arc", 0.0) * math.sin(math.pi * f)
+        bot.append((y, rz + roof.get("slope", 0.0) * f))
+        top.append((y, rz + th + lift))
+    prism_object(f"{key}_roof", bot + list(reversed(top)), x0 - 0.3, x1 + 0.3, "roof_top", col, mw)
+    box_object(f"{key}_fascia", x0 - 0.3, x1 + 0.3, ry0, ry0 + 0.35, rz - 0.9, rz + th + 0.2,
+               "steel", col, mw)
 
-    for i, b in enumerate(stand["blocks"]):
-        bx0, bx1 = b["x"] if b["x"] else (x0, x1)
-        ob = box_object(f"{key}_block{i}", bx0, bx1, b["y"][0], b["y"][1], b["z"][0], b["z"][1],
-                        b["mat"], col)
-        ob.matrix_world = mw
+    if stand.get("lights"):
+        # floodlights under the roof front (S7). One lamp object arrayed along the stand.
+        lamp = box_object(f"{key}_lamps", x0 + 1.0, x0 + 1.6, ry0 + 0.6, ry0 + 1.0,
+                          rz - 1.4, rz - 0.9, "lamp", col, mw)
+        a = lamp.modifiers.new("along", "ARRAY")
+        a.use_relative_offset = False
+        a.use_constant_offset = True
+        a.constant_offset_displace = (1.8, 0, 0)
+        a.count = int((x1 - x0 - 2.0) / 1.8)
+
+    add_blocks(key, stand["blocks"], x0, x1, col, mw)
     return seats_total
 
 
 def build_corners(col):
-    # NE corner: the north building runs on over the east stand's north end (S1 roof +36..+58)
-    box_object("ne_corner", 36.0, 58.0, 52.0, 73.5, 0, 14.0, "cladding", col)
-    box_object("ne_corner_roof", 36.0, 58.0, 52.0, 73.5, 14.0, 15.2, "roof_top", col)
-    # NW corner: west stand back building meets the north stand (S1)
-    box_object("nw_corner", -66.0, -40.3, 55.2, 73.5, 0, 14.0, "cladding", col)
+    """Corner buildings (S1 footprint, S7 photos)."""
+    # NE: brick hotel tower between Noord and Oost, ~7 storeys of windows (S7).
+    # Height and width PH (IMG_6935: top 23.5 m, face from u~27 to ~48 at v=55, second render check)
+    box_object("ne_tower", 26.5, 50.0, 55.0, 73.5, 0, 23.5, "brick", col)  # PH top 23.6 m (IMG_6935)
+    box_object("ne_tower_roof", 26.3, 50.2, 54.8, 73.7, 23.5, 24.0, "roof_top", col)
+    bm = bmesh.new()
+    for floor in range(7):
+        z = 3.5 + floor * 2.9
+        x = 28.0
+        while x + 1.0 < 49.0:   # windows facing the pitch (south face)
+            add_box(bm, x, x + 1.0, 54.9, 55.0, z, z + 1.5)
+            x += 2.2
+        y = 57.0
+        while y + 1.0 < 73.0:   # windows facing west (towards Noord's seats)
+            add_box(bm, 26.4, 26.5, y, y + 1.0, z, z + 1.5)
+            y += 2.4
+    new_object("ne_tower_windows", bm, "glass", col)
+    # club banner on the tower (S7: Daio Wasabi Stayen Stadium)
+    box_object("ne_banner", 33.0, 37.0, 54.85, 54.9, 8.0, 14.0, "banner_blue", col)
+    # fill to the east stand's back line
+    box_object("ne_fill", 50.0, 61.0, 52.0, 73.5, 0, 16.5, "cladding", col)
+
+    # NW: brick tower and glazed block between West and Noord (S7)
+    box_object("nw_tower", -44.0, -40.3, 55.2, 73.5, 0, 23.0, "brick", col)
+    box_object("nw_glass", -66.0, -44.0, 52.0, 73.5, 0, 17.0, "glass", col)
+    box_object("nw_glass_roof", -66.2, -43.8, 51.8, 73.7, 17.0, 17.4, "roof_top", col)
 
 
-def build_south_provisional(col):
-    """2020 design (S3), marked provisional. Wedge plan, wide end to the west."""
+def build_south(col):
+    """2020 design (S3), provisional. Plus the corner masts and screen still standing (S7)."""
     s = SOUTH
     front = -s["front"]
     half = s["length"] / 2
-    # Wedge footprint in world XY: pitch-side edge straight, rear edge follows the railway
     yb = front - s["terrace_depth"]
     pts = [(-half, yb), (half, yb), (half, yb - s["depth_narrow"]), (-half, yb - s["depth_wide"])]
     bm = bmesh.new()
@@ -416,7 +530,6 @@ def build_south_provisional(col):
         j = (i + 1) % 4
         bm.faces.new((bot[i], bot[j], top[j], top[i]))
     new_object("south_PROVISIONAL_2020", bm, "provisional", col)
-    # Low pitch-side terrace, 1.7 m high (S3), stepped in 5 risers
     tl = s["terrace_length"] / 2
     steps = 5
     for i in range(steps):
@@ -424,6 +537,14 @@ def build_south_provisional(col):
         y_a = front - i * s["terrace_depth"] / steps
         box_object(f"south_terrace_{i}", -tl, tl, y_a - s["terrace_depth"] / steps, y_a, 0, z,
                    "provisional", col)
+
+    # Floodlight masts at the two south corners (S7). Height EST ~35 m
+    for name, x, y in (("mast_se", 44.0, -64.0), ("mast_sw", -46.0, -66.0)):
+        box_object(name, x - 0.4, x + 0.4, y - 0.4, y + 0.4, 0, 35.0, "steel", col)
+        box_object(name + "_head", x - 2.0, x + 2.0, y - 0.3, y + 0.3, 33.0, 37.0, "lamp", col)
+    # Video screen at the south end of Oost (S7). Size EST
+    box_object("screen_frame", 30.0, 40.0, -61.0, -60.3, 7.0, 13.0, "steel", col)
+    box_object("screen", 30.4, 39.6, -60.35, -60.25, 7.4, 12.6, "screen", col)
 
 
 # ---------------------------------------------------------------------------
@@ -441,7 +562,6 @@ def setup_world(cfg):
     mapping = nt.nodes.new("ShaderNodeMapping")
     coord = nt.nodes.new("ShaderNodeTexCoord")
     ramp = nt.nodes.new("ShaderNodeValToRGB")
-    # gradient along Z of the view direction
     mapping.inputs["Rotation"].default_value = (0, math.radians(-90), 0)
     nt.links.new(coord.outputs["Generated"], mapping.inputs["Vector"])
     nt.links.new(mapping.outputs["Vector"], tex.inputs["Vector"])
@@ -469,38 +589,41 @@ def seat_eye(cam):
     tier = stand["tiers"][cam["tier"]]
     i = cam["row"] - 1
     y = tier["y0"] + i * tier["tread"] + 0.55 * tier["tread"]
-    z = tier["z0"] + i * tier["riser"] + EYE_SEATED
+    z = tier["z0"] + i * tier["riser"] + cam.get("eye", EYE_SEATED)
     x = local_x(stand, cam["along"])
     return stand_matrix(stand) @ Vector((x, y, z))
 
 
 def add_camera(name, cam):
-    if cam["type"] == "seat":
-        pos = seat_eye(cam)
-    else:
-        pos = Vector(cam["position"])
+    pos = seat_eye(cam) if cam["type"] == "seat" else Vector(cam["position"])
     cd = bpy.data.cameras.new(name)
     cd.lens = cam.get("lens_mm", 24)
-    cd.sensor_width = 36
+    cd.sensor_fit = cam.get("sensor_fit", "AUTO")
+    cd.sensor_width = cam.get("sensor_mm", 36)
     cd.clip_end = 2000
     ob = bpy.data.objects.new(name, cd)
     bpy.context.scene.collection.objects.link(ob)
     ob.location = pos
-    d = Vector(cam["target"]) - pos
-    ob.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
+    if cam["type"] == "solved":
+        # OpenCV camera (x right, y down, z forward) -> Blender camera (x right, y up, -z forward)
+        Rt = Matrix(cam["R_cv"]).transposed()
+        cols = [Rt.col[0], -Rt.col[1], -Rt.col[2]]
+        rot = Matrix([[cols[j][i] for j in range(3)] for i in range(3)])
+        ob.rotation_euler = rot.to_euler()
+    else:
+        d = Vector(cam["target"]) - pos
+        ob.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
     return ob
 
 
 def check_scene():
-    """Report anything floating above or sinking below the ground."""
     problems = []
     for ob in bpy.context.scene.objects:
-        if ob.type != "MESH" or ob.name in ("ground",):
+        if ob.type != "MESH" or ob.name == "ground":
             continue
         zs = [(ob.matrix_world @ Vector(c)).z for c in ob.bound_box]
-        lo = min(zs)
-        if lo < -0.05:
-            problems.append(f"{ob.name}: lowest point {lo:.2f} m below ground")
+        if min(zs) < -0.05:
+            problems.append(f"{ob.name}: lowest point {min(zs):.2f} m below ground")
     return problems
 
 
@@ -508,9 +631,7 @@ def main():
     argv = sys.argv
     argv = argv[argv.index("--") + 1:] if "--" in argv else argv[1:]
     final = "--final" in argv
-    save = None
-    if "--save" in argv:
-        save = argv[argv.index("--save") + 1]
+    save = argv[argv.index("--save") + 1] if "--save" in argv else None
     args = [a for a in argv if not a.startswith("--") and a != save]
     scene_path, out_dir = args[0], args[1]
     only = args[2:]
@@ -523,34 +644,35 @@ def main():
     sc.unit_settings.system = "METRIC"
     sc.unit_settings.scale_length = 1.0
 
-    for k, v in cfg["colours"].items():
-        if k.startswith("sky"):
+    colours = cfg["colours"]
+    for k, v in colours.items():
+        if k.startswith("sky") or k.startswith("seat"):
             continue
-        rough = 0.25 if k in ("glass", "steel") else 0.75
+        rough = 0.15 if k in ("glass", "steel_glass") else 0.75
         make_material(k, v, roughness=rough, metallic=0.6 if k == "steel" else 0.0)
+    make_emissive("lamp", colours["lamp_glow"], cfg["lights_on"] * 40.0 + 0.5)
+    make_emissive("led", colours["led_board"], 0.6)
+    make_emissive("screen", colours["screen_glow"], 2.0)
 
-    seat_colours = cfg["stand_seat_colours"]
+    seat_mats = {}
+    for key, spec in cfg["stand_seat_colours"].items():
+        seat_mats[key] = make_mosaic(f"seats_{key}", colours[spec["base"]],
+                                     colours[spec["accent"]], spec["accent_share"])
 
     col = bpy.data.collections.new("stadium")
     sc.collection.children.link(col)
     build_pitch(col)
     seat_mesh = make_seat_mesh()
-    seats = 0
-    for key, stand in STANDS.items():
-        seats += build_stand(key, stand, col, seat_mesh, seat_colours)
+    seats = sum(build_stand(k, s, col, seat_mesh, seat_mats) for k, s in STANDS.items())
     build_corners(col)
-    build_south_provisional(col)
+    build_south(col)
     setup_world(cfg)
     print(f"[build] seats modelled (no aisles yet): {seats}")
-
-    probs = check_scene()
-    for p in probs:
+    for p in check_scene():
         print("[check]", p)
 
     r = cfg["render"]
     sc.render.engine = r["engine"]
-    res = r["final_resolution"] if final else r["draft_resolution"]
-    sc.render.resolution_x, sc.render.resolution_y = res
     sc.render.resolution_percentage = 100
     sc.view_settings.view_transform = "Standard"
     if sc.render.engine == "CYCLES":
@@ -564,6 +686,8 @@ def main():
     for name, cam in cfg["cameras"].items():
         if name.startswith("_") or (only and name not in only):
             continue
+        res = cam.get("resolution") or (r["final_resolution"] if final else r["draft_resolution"])
+        sc.render.resolution_x, sc.render.resolution_y = res
         ob = add_camera(name, cam)
         sc.camera = ob
         sc.render.filepath = os.path.join(out_dir, f"{name}.png")

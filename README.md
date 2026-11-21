@@ -39,10 +39,16 @@ Add an entry to `cameras` in `scene.json`:
 `along` is the position along the pitch in metres from the halfway line. It's positive towards
 Noord for the side stands, and positive towards Oost for the end stands.
 
-## Status (draft 1)
+## Status (draft 2)
 
-- The pitch, and the Oost, Noord and West stands, are in their measured positions with real row counts.
-- Rakes and roof heights are estimates until they're checked against side-on photos.
-- Zuid shows the 2020 design (ae+ architecten) as **provisional**. The approved 2025 design isn't public.
-- Not modelled yet: aisles and tunnel openings, the West front strip W, floodlights, real roof shapes
-  (the West roof is curved), signage, or the area around the stadium.
+- **Pitch and stands.** The pitch, and the Oost, Noord and West stands, are placed from the aerial
+  measurements, with the real row counts.
+- **Heights.** Heights come from Rienhardt's matchday photos, by solving each photo's camera from the
+  pitch markings (`tools/solve_camera.py`).
+- **Matching renders.** Cameras named `match_*` reproduce those photos.
+  `tools/compare.py photo render out.jpg` puts the photo and the render side by side with an overlay.
+- **Detail.** Seats are a yellow and blue mix. The model includes the Noord hotel building, the brick
+  corner towers, the floodlights, the masts and the screen.
+- **Zuid.** Zuid shows the 2020 design (ae+ architecten) as **provisional**.
+- **Not modelled yet.** Aisles and tunnel openings, the West front strip W, signage content, and the area
+  around the stadium.
