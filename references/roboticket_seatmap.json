@@ -1,72 +1,743 @@
 {
   "_source": "STVV ticketing (stvv.roboticket.com), seat data for event 4758 (STVV - KRC Genk), read 21 Nov 2026 from the logged-in seat map. 12,423 seats in total; the map's coordinates are schematic (a uniform 150-unit seat grid), so only the topology is used: block order, rows, seat labels and gaps.",
   "_format": "Per tier: blocks in order along the stand; 'rows' maps a row or row range to the seat labels present, in runs. Labels are laid out from the seat-1 end of the block, one seat pitch per label, so a missing label leaves an empty place. 'gaps_after' marks a label after which the ticketing map shows a physical gap (a stair inside the block). Rows missing from a block inside the tier's row range are tunnel mouths where 'tunnels' is true.",
-  "_not_modelled": "WEST/W (5 rows x 100, rows labelled 1-100 to 401-499, in front of the north half of West), the skyboxes, office boxes and lounges (2 rows of 7-14 each), ZUID (M, N1-N4: the demolished stand) and the PITCH sector (50 places).",
-
+  "_not_modelled": "WEST/W (5 rows x 100, rows labelled 1-100 to 401-499, in front of the north half of West), ZUID (M, N1-N4: the demolished stand) and the PITCH sector (50 places).",
   "east-0": {
-    "stand": "east", "tier": 0, "rows": 29, "tunnels": true,
+    "stand": "east",
+    "tier": 0,
+    "rows": 29,
+    "tunnels": true,
     "_orientation": "blocks run north to south (A at the north end); seat 1 is at the north end of each row; row 1 at the front",
-    "order": "+x", "seat1": "low",
+    "order": "+x",
+    "seat1": "low",
     "blocks": [
-      {"name": "A", "rows": {"1-28": "1-20", "29": "1-19"}},
-      {"name": "B", "rows": {"1-6": "1-11", "16-29": "1-11"}},
-      {"name": "C", "rows": {"1-28": "1-25", "29": "1-2,4-22,24-25"}},
-      {"name": "D", "rows": {"1-6": "1-9", "16-29": "1-9"}},
-      {"name": "E", "rows": {"1-28": "1-25", "29": "1-2,4-22,24-25"}},
-      {"name": "F", "rows": {"1-6": "1-9", "16-29": "1-9"}},
-      {"name": "G", "rows": {"1-28": "1-25", "29": "1-2,4-22,24-25"}},
-      {"name": "H", "rows": {"1-6": "1-9", "16-29": "1-9"}},
-      {"name": "I", "rows": {"1-28": "1-25", "29": "1-2,4-22,24-25"}},
-      {"name": "J", "rows": {"1-6": "1-11", "16-29": "1-11"}},
-      {"name": "K", "rows": {"1-28": "1-20", "29": "2-20"}}
+      {
+        "name": "A",
+        "rows": {
+          "1-28": "1-20",
+          "29": "1-19"
+        }
+      },
+      {
+        "name": "B",
+        "rows": {
+          "1-6": "1-11",
+          "16-29": "1-11"
+        }
+      },
+      {
+        "name": "C",
+        "rows": {
+          "1-28": "1-25",
+          "29": "1-2,4-22,24-25"
+        }
+      },
+      {
+        "name": "D",
+        "rows": {
+          "1-6": "1-9",
+          "16-29": "1-9"
+        }
+      },
+      {
+        "name": "E",
+        "rows": {
+          "1-28": "1-25",
+          "29": "1-2,4-22,24-25"
+        }
+      },
+      {
+        "name": "F",
+        "rows": {
+          "1-6": "1-9",
+          "16-29": "1-9"
+        }
+      },
+      {
+        "name": "G",
+        "rows": {
+          "1-28": "1-25",
+          "29": "1-2,4-22,24-25"
+        }
+      },
+      {
+        "name": "H",
+        "rows": {
+          "1-6": "1-9",
+          "16-29": "1-9"
+        }
+      },
+      {
+        "name": "I",
+        "rows": {
+          "1-28": "1-25",
+          "29": "1-2,4-22,24-25"
+        }
+      },
+      {
+        "name": "J",
+        "rows": {
+          "1-6": "1-11",
+          "16-29": "1-11"
+        }
+      },
+      {
+        "name": "K",
+        "rows": {
+          "1-28": "1-20",
+          "29": "2-20"
+        }
+      }
     ]
   },
-
   "north-0": {
-    "stand": "north", "tier": 0, "rows": 16, "tunnels": true,
+    "stand": "north",
+    "tier": 0,
+    "rows": 16,
+    "tunnels": true,
     "_orientation": "blocks run west to east (X1 at the west end); seat 1 is at the east end of each row; row 1 at the front",
-    "order": "+x", "seat1": "high",
+    "order": "+x",
+    "seat1": "high",
     "blocks": [
-      {"name": "X1", "rows": {"1-16": "1-18"}},
-      {"name": "X2", "rows": {"9-16": "1-6"}},
-      {"name": "X3", "rows": {"1-16": "1-10"}},
-      {"name": "Y1", "rows": {"1-16": "1-22"}},
-      {"name": "Y2", "rows": {"9-16": "1-8"}},
-      {"name": "Y3", "rows": {"1-16": "1-22"}},
-      {"name": "Z1", "rows": {"1-16": "1-10"}},
-      {"name": "Z2", "rows": {"9-16": "1-6"}},
-      {"name": "Z3", "rows": {"1-16": "1-18"}}
+      {
+        "name": "X1",
+        "rows": {
+          "1-16": "1-18"
+        }
+      },
+      {
+        "name": "X2",
+        "rows": {
+          "9-16": "1-6"
+        }
+      },
+      {
+        "name": "X3",
+        "rows": {
+          "1-16": "1-10"
+        }
+      },
+      {
+        "name": "Y1",
+        "rows": {
+          "1-16": "1-22"
+        }
+      },
+      {
+        "name": "Y2",
+        "rows": {
+          "9-16": "1-8"
+        }
+      },
+      {
+        "name": "Y3",
+        "rows": {
+          "1-16": "1-22"
+        }
+      },
+      {
+        "name": "Z1",
+        "rows": {
+          "1-16": "1-10"
+        }
+      },
+      {
+        "name": "Z2",
+        "rows": {
+          "9-16": "1-6"
+        }
+      },
+      {
+        "name": "Z3",
+        "rows": {
+          "1-16": "1-18"
+        }
+      }
     ]
   },
-
   "west-0": {
-    "stand": "west", "tier": 0, "rows": 10, "tunnels": false,
+    "stand": "west",
+    "tier": 0,
+    "rows": 10,
+    "tunnels": false,
     "_orientation": "blocks run north to south (V1 at the north end); seat 1 is at the north end of each row; row 1 at the front",
-    "order": "-x", "seat1": "high",
+    "order": "-x",
+    "seat1": "high",
     "blocks": [
-      {"name": "V1", "rows": {"1-10": "1-33"}, "gaps_after": [13]},
-      {"name": "U1", "rows": {"1-10": "1-21"}},
-      {"name": "T1", "rows": {"1": "2-22", "2-10": "1-22"}},
-      {"name": "S1", "rows": {"1": "2-22", "2-10": "1-22"}},
-      {"name": "R1", "rows": {"1": "2-22", "2-10": "1-22"}},
-      {"name": "Q1", "rows": {"1": "2-22", "2-10": "1-22"}},
-      {"name": "P1", "rows": {"1-10": "1-30"}},
-      {"name": "O1", "rows": {"1-10": "1-18"}}
+      {
+        "name": "V1",
+        "rows": {
+          "1-10": "1-33"
+        },
+        "gaps_after": [
+          13
+        ]
+      },
+      {
+        "name": "U1",
+        "rows": {
+          "1-10": "1-21"
+        }
+      },
+      {
+        "name": "T1",
+        "rows": {
+          "1": "2-22",
+          "2-10": "1-22"
+        }
+      },
+      {
+        "name": "S1",
+        "rows": {
+          "1": "2-22",
+          "2-10": "1-22"
+        }
+      },
+      {
+        "name": "R1",
+        "rows": {
+          "1": "2-22",
+          "2-10": "1-22"
+        }
+      },
+      {
+        "name": "Q1",
+        "rows": {
+          "1": "2-22",
+          "2-10": "1-22"
+        }
+      },
+      {
+        "name": "P1",
+        "rows": {
+          "1-10": "1-30"
+        }
+      },
+      {
+        "name": "O1",
+        "rows": {
+          "1-10": "1-18"
+        }
+      }
     ]
   },
-
   "west-1": {
-    "stand": "west", "tier": 1, "rows": 6, "tunnels": false,
+    "stand": "west",
+    "tier": 1,
+    "rows": 6,
+    "tunnels": false,
     "_orientation": "as West lower. SR2 is the press area: rows 3 and 5 hold no seats (desk rows) and rows 4 and 6 are partly seated",
-    "order": "-x", "seat1": "high",
+    "order": "-x",
+    "seat1": "high",
     "blocks": [
-      {"name": "V2", "rows": {"1-5": "1-24", "6": "2-23"}},
-      {"name": "U2", "rows": {"1-5": "1-31", "6": "2-12,18-30"}},
-      {"name": "T2", "rows": {"1-5": "1-31", "6": "2-30"}},
-      {"name": "SR2", "rows": {"1-2": "1-28", "4": "2-4,6-8,10-12,14-16,18-20,22-24,26-28", "6": "2-8,10-13,15-18,20-23,25-28"}},
-      {"name": "Q2", "rows": {"1-5": "1-31", "6": "2-30"}},
-      {"name": "P2", "rows": {"1-5": "1-31", "6": "2-18,24-30"}},
-      {"name": "O2", "rows": {"1-5": "1-21", "6": "2-21"}}
+      {
+        "name": "V2",
+        "rows": {
+          "1-5": "1-24",
+          "6": "2-23"
+        }
+      },
+      {
+        "name": "U2",
+        "rows": {
+          "1-5": "1-31",
+          "6": "2-12,18-30"
+        }
+      },
+      {
+        "name": "T2",
+        "rows": {
+          "1-5": "1-31",
+          "6": "2-30"
+        }
+      },
+      {
+        "name": "SR2",
+        "rows": {
+          "1-2": "1-28",
+          "4": "2-4,6-8,10-12,14-16,18-20,22-24,26-28",
+          "6": "2-8,10-13,15-18,20-23,25-28"
+        }
+      },
+      {
+        "name": "Q2",
+        "rows": {
+          "1-5": "1-31",
+          "6": "2-30"
+        }
+      },
+      {
+        "name": "P2",
+        "rows": {
+          "1-5": "1-31",
+          "6": "2-18,24-30"
+        }
+      },
+      {
+        "name": "O2",
+        "rows": {
+          "1-5": "1-21",
+          "6": "2-21"
+        }
+      }
+    ]
+  },
+  "_hospitality_note": "Hospitality from the same read. Box levels per Rienhardt (Nov 2026): office boxes on the lower glazed level, skyboxes on the upper; box guests watch from two rows of outdoor seats in front of each box. Units are placed along the stand by their ticketing-map x extents (ticket x -414 = north end, -39 = south end), scaled onto the West stand. Labels run north to south in every unit. Officebox 11 and 12 have no seats in the ticketing data.",
+  "west-2": {
+    "stand": "west",
+    "tier": 2,
+    "rows": 2,
+    "kind": "units",
+    "ticket_x_range": [
+      -414,
+      -39
+    ],
+    "_orientation": "Office box level (lower glazed level). Seat labels run north to south.",
+    "units": [
+      {
+        "name": "Officelounge",
+        "x": [
+          -407,
+          -367
+        ],
+        "rows": {
+          "1-2": "1-21"
+        }
+      },
+      {
+        "name": "Officebox 1",
+        "x": [
+          -367,
+          -353
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Officebox 2",
+        "x": [
+          -353,
+          -338
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Officebox 3",
+        "x": [
+          -338,
+          -323
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Officebox 4",
+        "x": [
+          -323,
+          -308
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Officebox 5",
+        "x": [
+          -308,
+          -293
+        ],
+        "rows": {
+          "1-2": "15-21"
+        }
+      },
+      {
+        "name": "Officebox 6",
+        "x": [
+          -293,
+          -278
+        ],
+        "rows": {
+          "1-2": "22-28"
+        }
+      },
+      {
+        "name": "Officebox 7",
+        "x": [
+          -278,
+          -263
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Officebox 8",
+        "x": [
+          -263,
+          -249
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Officebox 9",
+        "x": [
+          -249,
+          -233
+        ],
+        "rows": {
+          "1-2": "15-21"
+        }
+      },
+      {
+        "name": "Officebox 10",
+        "x": [
+          -233,
+          -218
+        ],
+        "rows": {
+          "1-2": "22-28"
+        }
+      },
+      {
+        "name": "Officeterras",
+        "x": [
+          -218,
+          -193
+        ],
+        "rows": {
+          "1-2": "1-14"
+        }
+      },
+      {
+        "name": "Officebox 13",
+        "x": [
+          -193,
+          -179
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Officebox 14",
+        "x": [
+          -179,
+          -163
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Officebox 15",
+        "x": [
+          -163,
+          -148
+        ],
+        "rows": {
+          "1-2": "15-21"
+        }
+      },
+      {
+        "name": "Officebox 16",
+        "x": [
+          -148,
+          -134
+        ],
+        "rows": {
+          "1-2": "22-28"
+        }
+      },
+      {
+        "name": "Officebox 17",
+        "x": [
+          -134,
+          -108
+        ],
+        "rows": {
+          "1-2": "1-14"
+        }
+      },
+      {
+        "name": "Officebox 18",
+        "x": [
+          -108,
+          -82
+        ],
+        "rows": {
+          "1-2": "15-28"
+        }
+      },
+      {
+        "name": "Officebox 19",
+        "x": [
+          -82,
+          -48
+        ],
+        "rows": {
+          "1-2": "1-18"
+        }
+      }
+    ]
+  },
+  "west-3": {
+    "stand": "west",
+    "tier": 3,
+    "rows": 3,
+    "kind": "units",
+    "ticket_x_range": [
+      -414,
+      -39
+    ],
+    "_orientation": "Skybox level (upper glazed level). Seat labels run north to south. Two Skyterras units; named North and South here.",
+    "units": [
+      {
+        "name": "Skylounge",
+        "x": [
+          -414,
+          -401
+        ],
+        "rows": {
+          "1-2": "1-6"
+        }
+      },
+      {
+        "name": "Skybox 1",
+        "x": [
+          -401,
+          -386
+        ],
+        "rows": {
+          "1-2": "7-13"
+        }
+      },
+      {
+        "name": "SB 2",
+        "x": [
+          -386,
+          -372
+        ],
+        "rows": {
+          "1-2": "14-20"
+        }
+      },
+      {
+        "name": "Skybox 3",
+        "x": [
+          -371,
+          -357
+        ],
+        "rows": {
+          "1-2": "21-27"
+        }
+      },
+      {
+        "name": "Skybox 4",
+        "x": [
+          -356,
+          -342
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Skybox 5",
+        "x": [
+          -342,
+          -327
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Skybox 6",
+        "x": [
+          -327,
+          -312
+        ],
+        "rows": {
+          "1-2": "15-21"
+        }
+      },
+      {
+        "name": "Skybox 7",
+        "x": [
+          -312,
+          -297
+        ],
+        "rows": {
+          "1-2": "22-28"
+        }
+      },
+      {
+        "name": "Skybox 8",
+        "x": [
+          -297,
+          -282
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Skybox 9",
+        "x": [
+          -282,
+          -267
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Skybox 10",
+        "x": [
+          -267,
+          -251
+        ],
+        "rows": {
+          "1-2": "15-21"
+        }
+      },
+      {
+        "name": "Skybox 11",
+        "x": [
+          -251,
+          -238
+        ],
+        "rows": {
+          "1-2": "22-28"
+        }
+      },
+      {
+        "name": "Skyterras North",
+        "x": [
+          -238,
+          -211
+        ],
+        "rows": {
+          "1-2": "1-14",
+          "3": "3-14"
+        }
+      },
+      {
+        "name": "Skyterras South",
+        "x": [
+          -211,
+          -197
+        ],
+        "rows": {
+          "1-3": "1-7"
+        }
+      },
+      {
+        "name": "Skybox 12",
+        "x": [
+          -197,
+          -182
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Skybox 13",
+        "x": [
+          -182,
+          -167
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Skybox 14",
+        "x": [
+          -167,
+          -152
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Skybox 15",
+        "x": [
+          -152,
+          -137
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Skybox 16",
+        "x": [
+          -137,
+          -122
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Skybox 17",
+        "x": [
+          -122,
+          -107
+        ],
+        "rows": {
+          "1-2": "15-21"
+        }
+      },
+      {
+        "name": "Skybox 18",
+        "x": [
+          -107,
+          -92
+        ],
+        "rows": {
+          "1-2": "22-28"
+        }
+      },
+      {
+        "name": "Skybox 19",
+        "x": [
+          -92,
+          -77
+        ],
+        "rows": {
+          "1-2": "1-7"
+        }
+      },
+      {
+        "name": "Skybox 20",
+        "x": [
+          -77,
+          -63
+        ],
+        "rows": {
+          "1-2": "8-14"
+        }
+      },
+      {
+        "name": "Skybox 21",
+        "x": [
+          -63,
+          -39
+        ],
+        "rows": {
+          "1-2": "15-26"
+        }
+      }
     ]
   }
 }

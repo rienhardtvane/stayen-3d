@@ -124,8 +124,27 @@ STANDS = {
                 "z0": 10.4,        # PH: front rail 11.5 m (IMG_6223); photographer eye 13.5 m (IMG_6935)
                 "colour": "west_balcony",
             },
+            {   # office box level (lower glazed level): two rows of outdoor seats in front of each
+                # box (S9, box levels per Rienhardt). Floor and glass heights PH (IMG_6223)
+                "rows": 2,
+                "tread": 0.85,     # EST
+                "riser": 0.35,     # EST
+                "y0": 15.2,
+                "z0": 13.6,
+                "colour": "west_balcony",
+                "hospitality": True,
+            },
+            {   # skybox level (upper glazed level): two rows, three on the Skyterras (S9)
+                "rows": 3,
+                "tread": 0.75,     # EST
+                "riser": 0.35,     # EST
+                "y0": 17.2,
+                "z0": 17.3,
+                "colour": "west_balcony",
+                "hospitality": True,
+            },
         ],
-        "back": {"y": (15.3, 24.5), "z": 21.4},
+        "back": {"y": (17.0, 24.5), "z": 17.3},
         # PH: eave 21.4 m, floodlight row 19.8 m (IMG_6223). Curved (S7)
         "roof": {"y": (1.0, 24.5), "z": 21.4, "thick": 0.8, "arc": 1.5, "bay": 8.0, "rafter_depth": 1.2},
         "end_mat": "steel_glass",
@@ -135,14 +154,15 @@ STANDS = {
             {"y": (8.9, 9.8), "z": (0.0, 8.6), "x": None, "mat": "concrete_dark"},
             {"y": (9.0, 9.1), "z": (8.6, 9.6), "x": None, "mat": "glass"},
             {"y": (9.0, 9.8), "z": (9.6, 10.4), "x": None, "mat": "banner_yellow"},
-            # skybox level 14.4-16.6 m and office box level 17.4-20.4 m (PH, IMG_6223)
-            {"y": (15.2, 15.4), "z": (14.4, 16.6), "x": None, "mat": "glass"},
-            {"y": (15.2, 15.4), "z": (16.6, 17.4), "x": None, "mat": "facade"},
-            {"y": (15.2, 15.4), "z": (17.4, 20.4), "x": None, "mat": "glass"},
+            # office boxes: glass front at y 17.0 above their terrace (PH 14.0-16.8 m, IMG_6223)
+            {"y": (16.95, 17.05), "z": (14.0, 16.8), "x": None, "mat": "glass"},
+            # skyboxes: own volume on top, glass front at y 19.5 (PH 17.6-20.7 m, IMG_6223)
+            {"y": (19.5, 24.5), "z": (17.3, 21.0), "x": None, "mat": "facade"},
+            {"y": (19.45, 19.55), "z": (17.7, 20.7), "x": None, "mat": "glass"},
             # rear building with the solar roof, to -87 (S1). Height EST
             {"y": (24.5, 45.5), "z": (0.0, 12.0), "x": None, "mat": "cladding"},
             # brick stair and lift tower at the north end (S7)
-            {"y": (12.0, 26.0), "z": (0.0, 22.5), "x": (42.0, 50.0), "mat": "brick"},
+            {"y": (12.0, 26.0), "z": (0.0, 22.5), "x": (50.0, 53.0), "mat": "brick"},
         ],
     },
 }
@@ -163,7 +183,8 @@ SOUTH = {
 SEATMAP = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                       "references", "roboticket_seatmap.json")))
 STAND_NAMES = {("east", 0): "Oost", ("north", 0): "Noord",
-               ("west", 0): "West lower", ("west", 1): "West balcony"}
+               ("west", 0): "West lower", ("west", 1): "West balcony",
+               ("west", 2): "Office boxes", ("west", 3): "Skyboxes"}
 GAP_W = 1.2          # EST width of a stair inside a block ("gaps_after")
 
 SEATS = []          # filled while building: one dict per seat
@@ -585,11 +606,61 @@ def layout_blocks(layout, x0, x1, margin=0.6):
     return blocks, aisle
 
 
+def build_units(name, tier, layout, x0, x1, col, seat_mesh, seat_mat, mw, stand, key, ti):
+    """Hospitality level: boxes, lounges and terraces side by side, each with its own rows of
+    outdoor seats, glass side screens between units and a glass balustrade at the front (S9).
+    Units are placed by their ticketing-map extents scaled onto the stand length."""
+    t, r, rows_n = tier["tread"], tier["riser"], tier["rows"]
+    y0, z0 = tier["y0"], tier["z0"]
+    prism_object(f"{name}_floor", tier_profile(tier), x0, x1, "concrete", col, mw)
+    # glass balustrade drawn as its frame only (top rail and posts), so it doesn't block the view
+    box_object(f"{name}_rail", x0, x1, y0 - 0.05, y0 + 0.02, z0 + 0.95, z0 + 1.0, "steel", col, mw)
+    bm = bmesh.new()
+    px = x0
+    while px <= x1:
+        add_box(bm, px - 0.03, px + 0.03, y0 - 0.04, y0 + 0.01, z0, z0 + 0.95)
+        px += 1.5
+    new_object(f"{name}_posts", bm, "steel", col).matrix_world = mw
+    tx0, tx1 = layout["ticket_x_range"]
+    # ticket x grows north to south; for the West stand local x = v, so north = high local x
+    def lx_of(tx):
+        return x1 - (tx - tx0) / (tx1 - tx0) * (x1 - x0)
+    count, k = 0, 0
+    for u in layout["units"]:
+        ua, ub = sorted((lx_of(u["x"][0]), lx_of(u["x"][1])))
+        box_object(f"{name}_screen", ub - 0.04, ub + 0.04, y0 + 0.2, y0 + rows_n * t + 0.3, z0,
+                   z0 + rows_n * r + 1.1, "steel_glass", col, mw)
+        rows = parse_rows(u["rows"])
+        groups = []
+        for rw in sorted(rows):
+            if groups and groups[-1][1] == rows[rw] and groups[-1][0][-1] == rw - 1:
+                groups[-1][0].append(rw)
+            else:
+                groups.append(([rw], rows[rw]))
+        width = max(len(v) for v in rows.values()) * SEAT_PITCH
+        start_hi = (ua + ub) / 2 + width / 2 - SEAT_PITCH / 2   # first label at the north (high) side
+        for rows_g, labels in groups:
+            first = min(min(v) for v in rows.values())
+            run = [labels[0]]
+            for lab in labels[1:] + [None]:
+                if lab is not None and lab == run[-1] + 1:
+                    run.append(lab)
+                    continue
+                x_first = start_hi - (run[0] - first) * SEAT_PITCH
+                count += seat_run(f"{name}_u{k}", x_first, -SEAT_PITCH, run, rows_g, tier, col,
+                                  seat_mesh, seat_mat, mw, u["name"], key, ti)
+                k += 1
+                run = [lab]
+    return count
+
+
 def build_tier(name, tier, x0, x1, col, seat_mesh, seat_mat, mw, stand):
     key, ti = _CURRENT["stand"], _CURRENT["tier"]
     layout = SEATMAP[f"{key}-{ti}"]
     t, r, rows_n = tier["tread"], tier["riser"], tier["rows"]
     y0, z0 = tier["y0"], tier["z0"]
+    if layout.get("kind") == "units":
+        return build_units(name, tier, layout, x0, x1, col, seat_mesh, seat_mat, mw, stand, key, ti)
     conc = prism_object(f"{name}_concrete", tier_profile(tier), x0, x1, "concrete", col, mw)
     blocks, aisle = layout_blocks(layout, x0, x1)
     high = layout["seat1"] == "high"
@@ -970,7 +1041,8 @@ def seat_colour(seat, cfg):
     rnd = random.Random(hash((round(x * 2), round(y * 2), round(z * 2.5))) & 0xFFFFFFFF).random()
     spec = cfg["stand_seat_colours"]
     key = {("east", 0): "east", ("north", 0): "north", ("west", 0): "west_lower",
-           ("west", 1): "west_balcony"}[(seat["stand"], seat["tier"])]
+           ("west", 1): "west_balcony", ("west", 2): "west_balcony",
+           ("west", 3): "west_balcony"}[(seat["stand"], seat["tier"])]
     sp = spec[key]
     base_blue = sp["base"] == "seat_blue"
     if sp.get("pattern"):
@@ -994,13 +1066,15 @@ def export_web(out_dir, cfg):
         "eye_height": EYE_SEATED,
         "tiers": [{"id": f"{k}-{i}", "name": STAND_NAMES[(k, i)],
                    "outward": list(STANDS[k]["outward"]),
-                   "blocks": [b["name"] for b in SEATMAP[f"{k}-{i}"]["blocks"]]} for k, i in tiers],
+                   "blocks": [b["name"] for b in SEATMAP[f"{k}-{i}"].get("blocks") or SEATMAP[f"{k}-{i}"]["units"]]}
+                  for k, i in tiers],
         "fields": ["tier", "block", "row", "seat", "x", "y", "z", "blue"],
         "seats": [],
     }
     for st in SEATS:
         ti = tiers.index((st["stand"], st["tier"]))
-        bi = [b["name"] for b in SEATMAP[f"{st['stand']}-{st['tier']}"]["blocks"]].index(st["block"])
+        lay = SEATMAP[f"{st['stand']}-{st['tier']}"]
+        bi = [b["name"] for b in lay.get("blocks") or lay["units"]].index(st["block"])
         out["seats"].append([ti, bi, st["row"], st["no"], *st["pos"], seat_colour(st, cfg)])
     with open(os.path.join(out_dir, "seats.json"), "w") as f:
         _json.dump(out, f, separators=(",", ":"))
@@ -1090,6 +1164,7 @@ def add_camera(name, cam):
     cd.sensor_fit = cam.get("sensor_fit", "AUTO")
     cd.sensor_width = cam.get("sensor_mm", 36)
     cd.clip_end = 2000
+    cd.clip_start = cam.get("clip_start", 0.1)
     ob = bpy.data.objects.new(name, cd)
     bpy.context.scene.collection.objects.link(ob)
     ob.location = pos

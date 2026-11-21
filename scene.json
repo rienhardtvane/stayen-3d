@@ -171,7 +171,8 @@
       "resolution": [
         1008,
         756
-      ]
+      ],
+      "clip_start": 0.8
     },
     "match_IMG6935_balcony": {
       "_note": "Solved from references/photos/IMG_6935.jpg (tools/solve_camera.py), error 5.4 px",
@@ -204,7 +205,8 @@
       "resolution": [
         756,
         1008
-      ]
+      ],
+      "clip_start": 0.8
     },
     "match_IMG6228_noord": {
       "type": "seat",
@@ -301,6 +303,34 @@
         22
       ],
       "lens_mm": 20
+    },
+    "skybox_10_row1": {
+      "_note": "Skybox 10, front row of its outdoor seats (S9).",
+      "type": "seat",
+      "stand": "west",
+      "tier": 3,
+      "row": 1,
+      "along": 13,
+      "target": [
+        20,
+        5,
+        0
+      ],
+      "lens_mm": 24
+    },
+    "officelounge_row1": {
+      "_note": "Officelounge at the north end, front row (S9).",
+      "type": "seat",
+      "stand": "west",
+      "tier": 2,
+      "row": 1,
+      "along": 44,
+      "target": [
+        10,
+        -10,
+        0
+      ],
+      "lens_mm": 24
     }
   },
   "render": {

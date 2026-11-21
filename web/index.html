@@ -88,7 +88,7 @@
     </div>
     <div class="lbl">Or tap a seat on the plan</div>
     <canvas id="plan"></canvas>
-    <div class="note">Concept model built from public drawings, the aerial photo and matchday photos. Blocks, rows and seat numbers match the club ticketing system; seat positions within the stands and the seat colour pattern are approximate. Advertising boards show empty placeholder slots. The south end shows the site as it stands since June 2026.</div>
+    <div class="note">Concept model built from public drawings, the aerial photo and matchday photos. Blocks, rows and seat numbers match the club ticketing system; seat positions within the stands and the seat colour pattern are approximate. Hospitality covers the office boxes (lower glazed level) and skyboxes (upper level), each with its outdoor seats in front. Advertising boards show empty placeholder slots. The south end shows the site as it stands since June 2026.</div>
   </aside>
 </main>
 
@@ -379,6 +379,8 @@ function clearOwnSeat(seatIdx) {
 }
 const seatIdxOf = new Map(data.seats.map((s, i) => [s, i]));
 // ---------- seat selection ----------
+const HOSP = new Set(["Office boxes", "Skyboxes"]);
+const WEST = new Set(["West lower", "West balcony", "Office boxes", "Skyboxes"]);
 const rowsOf = (t, b) => Object.keys(index[t][b]).map(Number).sort((a, c) => a - c);
 function current() {
   const rows = rowsOf(state.tier, state.block);
@@ -407,7 +409,8 @@ function goToSeat(resetLook = true) {
   marker.position.copy(B(s[4], s[5], s[6] + 3.2));
   const blockName = t.blocks[s[1]];
   document.getElementById("seatlabel").innerHTML =
-    `<b>${t.name}</b> · Block ${blockName} · Row ${s[2]} · Seat ${s[3]}` +
+    (HOSP.has(t.name) ? `<b>${blockName}</b> · ${t.name === "Skyboxes" ? "upper" : "lower"} box level · Row ${s[2]} · Seat ${s[3]}`
+                      : `<b>${t.name}</b> · Block ${blockName} · Row ${s[2]} · Seat ${s[3]}`) +
     `<small>${index[s[0]][s[1]][s[2]].length} seats in this row · ${rowsOf(s[0], s[1]).length} rows in block ${blockName}</small>`;
   document.getElementById("rowv").textContent = s[2];
   document.getElementById("seatv").textContent = s[3];
@@ -470,7 +473,8 @@ function renderChips() {
   data.tiers[state.tier].blocks.forEach((name, i) => {
     if (!index[state.tier][i]) return;
     const b = document.createElement("button");
-    b.textContent = name; b.className = i === state.block ? "on" : "";
+    b.textContent = name.replace(/^Officebox /, "").replace(/^Skybox /, "").replace(/^SB /, "").replace("Skyterras ", "Terras ").replace("Officeterras", "Terras").replace("lounge", " lounge");
+    b.title = name; b.className = i === state.block ? "on" : "";
     b.onclick = () => { state.block = i; state.seat = Math.ceil(index[state.tier][i][rowsOf(state.tier, i)[0]].length / 2); pick(); };
     blocks.append(b);
   });
@@ -524,7 +528,7 @@ function drawPlan() {
   for (const st of data.seats) { const k = st[0] + ":" + st[1]; (seen[k] ??= [0, 0, 0, st]); seen[k][0] += st[4]; seen[k][1] += st[5]; seen[k][2]++; }
   for (const k in seen) {
     const [sx, sy, n, st] = seen[k];
-    if (data.tiers[st[0]].name === "West balcony") continue;
+    if (data.tiers[st[0]].name !== "West lower" && WEST.has(data.tiers[st[0]].name)) continue;
     const [x, y] = planXY(sx / n, sy / n);
     const north = data.tiers[st[0]].name === "Noord";
     g.font = `${(north ? 8.5 : 11) * dpr}px -apple-system, sans-serif`;
@@ -547,7 +551,8 @@ plan.addEventListener("click", e => {
   for (const st of data.seats) {
     const [x, y] = planXY(st[4], st[5]);
     // prefer the upper tier only when the West balcony is already selected
-    const pen = (data.tiers[st[0]].name === "West balcony") !== (data.tiers[state.tier].name === "West balcony") ? 6 * dpr : 0;
+    // the West tiers overlap on the plan: prefer the tier that is already selected
+    const pen = (st[0] !== state.tier && WEST.has(data.tiers[st[0]].name) && WEST.has(data.tiers[state.tier].name)) ? 6 * dpr : 0;
     const d = Math.hypot(x - px, y - py) + pen;
     if (d < bd) { bd = d; best = st; }
   }

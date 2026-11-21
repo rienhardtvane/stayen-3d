@@ -137,8 +137,8 @@ schematic 150-unit grid, so only the layout is used. It is stored in
 - **West lower** has 10 rows. V1 has a stair after seat 13, and Q1 to T1 have no seat 1 in row 1.
   Seat 1 is at the north end.
 - **West balcony** has 6 rows. SR2 is the press area: rows 3 and 5 have no seats.
-- **Not modelled:** W (5 x 100 seats in front of the north half of West), the skyboxes,
-  office boxes and lounges, the demolished Zuid stand, and the PITCH sector.
+- **Hospitality (735 seats)** is in `west-2` and `west-3` of the seat map. Per Rienhardt, the office boxes are on the lower glazed level and the skyboxes on the upper level, and guests sit on two rows of outdoor seats in front of each box. The two Skyterras have 3 rows. The Officelounge and Skylounge are at the north end, by the NW corner. Units are placed by their ticketing-map extents. Officebox 11 and 12 have no seats in the data.
+- **Not modelled:** W (5 x 100 seats in front of the north half of West), the demolished Zuid stand, and the PITCH sector.
 
 ## Advertising inventory
 
