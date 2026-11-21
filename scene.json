@@ -35,7 +35,7 @@
     "house_brick": "#8E5A43",
     "house_roof": "#4A4C52"
   },
-  "_seat_note": "S7 photos: every stand is a yellow and blue mix. accent_share is the fraction of accent-coloured seats. EST from photos.",
+  "_seat_note": "Seat mixes EST from S7, S8 and S10 photos: Noord about half blue, West balcony mostly blue, hospitality all blue.",
   "stand_seat_colours": {
     "east": {
       "base": "seat_yellow",
@@ -46,7 +46,7 @@
     "north": {
       "base": "seat_yellow",
       "accent": "seat_blue",
-      "accent_share": 0.3
+      "accent_share": 0.45
     },
     "west_lower": {
       "base": "seat_blue",
@@ -56,7 +56,13 @@
     "west_balcony": {
       "base": "seat_blue",
       "accent": "seat_yellow",
-      "accent_share": 0.4
+      "accent_share": 0.25
+    },
+    "west_hosp": {
+      "base": "seat_blue",
+      "accent": "seat_yellow",
+      "accent_share": 0.0,
+      "_note": "padded blue VIP seats (S10)"
     }
   },
   "lights_on": 0,
@@ -331,6 +337,21 @@
         0
       ],
       "lens_mm": 24
+    },
+    "check_office_terrace": {
+      "_note": "Office box terrace looking north along the stand, like the S10 video stills.",
+      "type": "free",
+      "position": [
+        -58.6,
+        -22,
+        15.2
+      ],
+      "target": [
+        -52,
+        10,
+        13.6
+      ],
+      "lens_mm": 20
     }
   },
   "render": {

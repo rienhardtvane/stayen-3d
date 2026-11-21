@@ -124,29 +124,36 @@ STANDS = {
                 "z0": 10.4,        # PH: front rail 11.5 m (IMG_6223); photographer eye 13.5 m (IMG_6935)
                 "colour": "west_balcony",
             },
-            {   # office box level (lower glazed level): two rows of outdoor seats in front of each
-                # box (S9, box levels per Rienhardt). Floor and glass heights PH (IMG_6223)
+            {   # office box level (lower glazed level). Section from S10 (video stills, terrace
+                # seen looking north): frameless glass balustrade at the front, a 1.5 m walkway,
+                # two stepped rows of padded seats, a raised standing strip, then the box glass.
+                # The skybox floor slab is the terrace's ceiling. Heights PH (IMG_6223), depths EST
                 "rows": 2,
-                "tread": 0.85,     # EST
-                "riser": 0.35,     # EST
-                "y0": 15.2,
-                "z0": 13.6,
-                "colour": "west_balcony",
+                "tread": 0.9,
+                "riser": 0.35,
+                "y0": 16.7,
+                "z0": 13.75,
+                "front_y": 15.2,
+                "walk_z": 13.4,
+                "colour": "west_hosp",
                 "hospitality": True,
             },
-            {   # skybox level (upper glazed level): two rows, three on the Skyterras (S9)
+            {   # skybox level (upper glazed level), the same section one floor up (S10); the
+                # Skyterras use a third row where the boxes have their standing strip (S9)
                 "rows": 3,
-                "tread": 0.75,     # EST
-                "riser": 0.35,     # EST
-                "y0": 17.2,
-                "z0": 17.3,
-                "colour": "west_balcony",
+                "tread": 0.9,
+                "riser": 0.35,
+                "y0": 16.7,
+                "z0": 17.85,
+                "front_y": 15.2,
+                "walk_z": 17.5,
+                "colour": "west_hosp",
                 "hospitality": True,
             },
         ],
-        "back": {"y": (17.0, 24.5), "z": 17.3},
+        "back": {"y": (19.7, 24.5), "z": 21.0},
         # PH: eave 21.4 m, floodlight row 19.8 m (IMG_6223). Curved (S7)
-        "roof": {"y": (1.0, 24.5), "z": 21.4, "thick": 0.8, "arc": 1.5, "bay": 8.0, "rafter_depth": 1.2},
+        "roof": {"y": (1.0, 24.5), "z": 21.4, "thick": 0.8, "arc": 1.5, "bay": 8.0, "rafter_depth": 0.5},
         "end_mat": "steel_glass",
         "lights": True,
         "blocks": [
@@ -154,11 +161,14 @@ STANDS = {
             {"y": (8.9, 9.8), "z": (0.0, 8.6), "x": None, "mat": "concrete_dark"},
             {"y": (9.0, 9.1), "z": (8.6, 9.6), "x": None, "mat": "glass"},
             {"y": (9.0, 9.8), "z": (9.6, 10.4), "x": None, "mat": "banner_yellow"},
-            # office boxes: glass front at y 17.0 above their terrace (PH 14.0-16.8 m, IMG_6223)
-            {"y": (16.95, 17.05), "z": (14.0, 16.8), "x": None, "mat": "glass"},
-            # skyboxes: own volume on top, glass front at y 19.5 (PH 17.6-20.7 m, IMG_6223)
-            {"y": (19.5, 24.5), "z": (17.3, 21.0), "x": None, "mat": "facade"},
-            {"y": (19.45, 19.55), "z": (17.7, 20.7), "x": None, "mat": "glass"},
+            # office level: structure under the walkway, standing strip, box glass (S10)
+            {"y": (15.2, 16.7), "z": (0.0, 13.4), "x": None, "mat": "concrete_dark"},
+            {"y": (18.5, 19.7), "z": (0.0, 14.45), "x": None, "mat": "concrete"},
+            {"y": (19.65, 19.75), "z": (14.45, 17.0), "x": None, "mat": "glass"},
+            # skybox floor slab = office terrace ceiling (S10), then the skybox level
+            {"y": (15.2, 19.7), "z": (17.0, 17.5), "x": None, "mat": "concrete"},
+            {"y": (18.5, 19.7), "z": (17.5, 18.55), "x": None, "mat": "concrete"},
+            {"y": (19.65, 19.75), "z": (18.55, 21.0), "x": None, "mat": "glass"},
             # rear building with the solar roof, to -87 (S1). Height EST
             {"y": (24.5, 45.5), "z": (0.0, 12.0), "x": None, "mat": "cladding"},
             # brick stair and lift tower at the north end (S7)
@@ -541,16 +551,16 @@ def make_seat_mesh():
     return me
 
 
-def tier_profile(tier, lift=0.0):
+def tier_profile(tier, lift=0.0, base=0.0):
     t, r, rows = tier["tread"], tier["riser"], tier["rows"]
     y0, z0 = tier["y0"], tier["z0"]
-    prof = [(y0, 0.0), (y0, z0 + lift)]
+    prof = [(y0, base), (y0, z0 + lift)]
     for i in range(rows):
         z = z0 + i * r + lift
         prof.append((y0 + (i + 1) * t, z))
         if i < rows - 1:
             prof.append((y0 + (i + 1) * t, z + r))
-    prof.append((y0 + rows * t, 0.0))
+    prof.append((y0 + rows * t, base))
     return prof
 
 
@@ -612,15 +622,20 @@ def build_units(name, tier, layout, x0, x1, col, seat_mesh, seat_mat, mw, stand,
     Units are placed by their ticketing-map extents scaled onto the stand length."""
     t, r, rows_n = tier["tread"], tier["riser"], tier["rows"]
     y0, z0 = tier["y0"], tier["z0"]
-    prism_object(f"{name}_floor", tier_profile(tier), x0, x1, "concrete", col, mw)
-    # glass balustrade drawn as its frame only (top rail and posts), so it doesn't block the view
-    box_object(f"{name}_rail", x0, x1, y0 - 0.05, y0 + 0.02, z0 + 0.95, z0 + 1.0, "steel", col, mw)
+    walk = tier.get("walk_z", z0)
+    fy = tier.get("front_y", y0)
+    prism_object(f"{name}_floor", tier_profile(tier, base=walk), x0, x1, "concrete", col, mw)
+    box_object(f"{name}_walkway", x0, x1, fy, y0, walk - 0.3, walk, "concrete", col, mw)
+    # frameless glass balustrade (S10), see-through
+    box_object(f"{name}_balustrade", x0, x1, fy - 0.03, fy, walk, walk + 1.1, "glass_clear", col, mw)
+    box_object(f"{name}_handrail", x0, x1, fy - 0.05, fy + 0.02, walk + 1.1, walk + 1.14, "steel", col, mw)
+    # downlights in the ceiling over the terrace (S10), every 3 m
     bm = bmesh.new()
-    px = x0
-    while px <= x1:
-        add_box(bm, px - 0.03, px + 0.03, y0 - 0.04, y0 + 0.01, z0, z0 + 0.95)
-        px += 1.5
-    new_object(f"{name}_posts", bm, "steel", col).matrix_world = mw
+    lx = x0 + 1.5
+    while lx < x1:
+        add_box(bm, lx - 0.12, lx + 0.12, 17.2, 17.44, walk + 3.42, walk + 3.48)
+        lx += 3.0
+    new_object(f"{name}_downlights", bm, "lamp", col).matrix_world = mw
     tx0, tx1 = layout["ticket_x_range"]
     # ticket x grows north to south; for the West stand local x = v, so north = high local x
     def lx_of(tx):
@@ -628,8 +643,6 @@ def build_units(name, tier, layout, x0, x1, col, seat_mesh, seat_mat, mw, stand,
     count, k = 0, 0
     for u in layout["units"]:
         ua, ub = sorted((lx_of(u["x"][0]), lx_of(u["x"][1])))
-        box_object(f"{name}_screen", ub - 0.04, ub + 0.04, y0 + 0.2, y0 + rows_n * t + 0.3, z0,
-                   z0 + rows_n * r + 1.1, "steel_glass", col, mw)
         rows = parse_rows(u["rows"])
         groups = []
         for rw in sorted(rows):
@@ -1041,8 +1054,8 @@ def seat_colour(seat, cfg):
     rnd = random.Random(hash((round(x * 2), round(y * 2), round(z * 2.5))) & 0xFFFFFFFF).random()
     spec = cfg["stand_seat_colours"]
     key = {("east", 0): "east", ("north", 0): "north", ("west", 0): "west_lower",
-           ("west", 1): "west_balcony", ("west", 2): "west_balcony",
-           ("west", 3): "west_balcony"}[(seat["stand"], seat["tier"])]
+           ("west", 1): "west_balcony", ("west", 2): "west_hosp",
+           ("west", 3): "west_hosp"}[(seat["stand"], seat["tier"])]
     sp = spec[key]
     base_blue = sp["base"] == "seat_blue"
     if sp.get("pattern"):
@@ -1215,6 +1228,10 @@ def main():
             continue
         rough = 0.15 if k in ("glass", "steel_glass") else 0.75
         make_material(k, v, roughness=rough, metallic=0.6 if k == "steel" else 0.0)
+    m = make_material("glass_clear", colours["glass"], roughness=0.05)
+    bs = m.node_tree.nodes.get("Principled BSDF")
+    bs.inputs["Alpha"].default_value = 0.18
+    m.blend_method = "BLEND" if hasattr(m, "blend_method") else None
     make_emissive("lamp", colours["lamp_glow"], cfg["lights_on"] * 40.0 + 0.5)
     make_emissive("led", colours["led_board"], 0.6)
     make_emissive("screen", colours["screen_glow"], 2.0)

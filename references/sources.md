@@ -161,3 +161,7 @@ each slot's id and size.
 | Stair widths | sized to fill each stand between the real blocks (0.9-1.8 m) | EST |
 | West front strip W, hospitality boxes | not modelled | To do |
 | Zuid | current state by default; 2020 design available as `south_mode: provisional` | Waiting on the real building |
+
+## S10 Video stills (user, Nov 2026)
+
+Three stills from a matchday video on the West box levels and the north-west corner. Used for the box terrace section: a frameless glass balustrade at the front, a walkway of about 1.5 m, two stepped rows of padded blue seats, a raised standing strip, then the box glazing, with the skybox floor slab forming the terrace ceiling and downlights in it. Also used for seat colour mixes (EST): Noord about half blue, West balcony mostly blue, hospitality all blue. Depths are EST; heights stay PH from IMG_6223. Stills are kept out of the repo.
