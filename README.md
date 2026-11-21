@@ -53,6 +53,20 @@ LED images tile every 10 m. Printed boards stretch to their slot size (most are 
 changing the inventory, run `python tools/make_slots.py adslots/inventory.csv adslots/` to redraw
 the placeholders.
 
+## Seat picker (web)
+
+`web/` is the browser prototype. You pick a stand, block, row and seat, or tap the plan, and the
+camera moves to that seat's eye height. Drag to look around, or switch to the aerial view.
+
+```
+python build.py scene.json renders/ --export-web web/   # writes stadium.gltf.json and seats.json
+```
+
+- `seats.json` lists every modelled seat (10,441) with its ticketing block, row, seat number and
+  position. Seat 1 is on the left as seen from the seat.
+- The model is glTF with its binary buffer embedded, saved as `.json` so any static host serves it.
+- The page uses three.js from jsdelivr.
+
 ## Status (draft 3)
 
 - **Zuid.** It shows the current state by default: an empty site, a black screen, and the crane. Set

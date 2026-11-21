@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Stayen seat view (concept)</title>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #161d2c; --line: #263047; --text: #e8ecf4; --muted: #8e9ab3;
+    --yellow: #f6c700; --blue: #1e3c8c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 15px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; flex-direction: column; overflow: hidden; }
+  header { padding: 10px 14px 8px; display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 16px; margin: 0; font-weight: 650; letter-spacing: .2px; }
+  header span { color: var(--muted); font-size: 12px; }
+  main { flex: 1; display: flex; min-height: 0; }
+  #viewer { position: relative; flex: 1; min-height: 0; touch-action: none; }
+  #viewer canvas { display: block; width: 100%; height: 100%; }
+  #seatlabel { position: absolute; left: 10px; top: 10px; background: rgba(15,20,32,.82);
+    border: 1px solid var(--line); border-radius: 10px; padding: 7px 11px; pointer-events: none; }
+  #seatlabel b { color: var(--yellow); font-weight: 650; }
+  #seatlabel small { display: block; color: var(--muted); font-size: 11.5px; }
+  #modes { position: absolute; right: 10px; top: 10px; display: flex; border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden; }
+  #modes button { background: rgba(15,20,32,.82); color: var(--text); border: 0; padding: 8px 12px; font: inherit; font-size: 13px; }
+  #modes button.on { background: var(--yellow); color: #111; font-weight: 650; }
+  #hint { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); color: #fff;
+    background: rgba(0,0,0,.45); padding: 5px 10px; border-radius: 99px; font-size: 12px; pointer-events: none;
+    transition: opacity .6s; }
+  #loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+  aside { width: 340px; border-left: 1px solid var(--line); background: var(--panel); overflow-y: auto; padding: 12px 14px 16px; }
+  @media (max-width: 760px) {
+    main { flex-direction: column; }
+    #viewer { flex: 1 1 52%; }
+    aside { width: auto; flex: 0 0 auto; max-height: 48%; border-left: 0; border-top: 1px solid var(--line); }
+    header span { display: none; }
+    #modes { top: auto; bottom: 10px; }
+    #hint { left: 10px; transform: none; bottom: 14px; }
+    #seatlabel { right: 10px; }
+  }
+  .lbl { font-size: 11.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 10px 0 6px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chips button { background: #1d2638; color: var(--text); border: 1px solid var(--line); border-radius: 8px;
+    padding: 6px 10px; font: inherit; font-size: 13.5px; min-width: 38px; }
+  .chips button.on { background: var(--yellow); border-color: var(--yellow); color: #111; font-weight: 650; }
+  .steppers { display: flex; gap: 12px; }
+  .stepper { flex: 1; display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .stepper button { background: #1d2638; color: var(--text); border: 0; width: 40px; height: 38px; font-size: 20px; }
+  .stepper div { flex: 1; text-align: center; }
+  .stepper div small { display: block; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; }
+  .stepper div b { font-size: 17px; }
+  #plan { width: 100%; aspect-ratio: 1.05; display: block; background: #121827; border: 1px solid var(--line); border-radius: 10px; touch-action: manipulation; }
+  .note { color: var(--muted); font-size: 12px; margin-top: 10px; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<header><h1>Stayen · view from your seat</h1><span>Concept · STVV, Sint-Truiden</span></header>
+<main>
+  <div id="viewer">
+    <div id="loading">Loading the stadium…</div>
+    <div id="seatlabel"></div>
+    <div id="modes"><button id="mSeat" class="on">Seat view</button><button id="mAerial">Aerial</button></div>
+    <div id="hint">Drag to look around</div>
+  </div>
+  <aside>
+    <div class="lbl">Stand</div>
+    <div class="chips" id="tiers"></div>
+    <div class="lbl">Block</div>
+    <div class="chips" id="blocks"></div>
+    <div class="lbl">Row and seat</div>
+    <div class="steppers">
+      <div class="stepper"><button data-d="-1" data-k="row">−</button><div><small>Row</small><b id="rowv">1</b></div><button data-d="1" data-k="row">+</button></div>
+      <div class="stepper"><button data-d="-1" data-k="seat">−</button><div><small>Seat</small><b id="seatv">1</b></div><button data-d="1" data-k="seat">+</button></div>
+    </div>
+    <div class="lbl">Or tap a seat on the plan</div>
+    <canvas id="plan"></canvas>
+    <div class="note">Concept model built from public drawings, the aerial photo and matchday photos. Seat positions follow the ticketing blocks; numbering and the exact seat pattern are approximate. Advertising boards show empty placeholder slots. The south end shows the site as it stands since June 2026.</div>
+  </aside>
+</main>
+
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+
+// Blender metres (X to Oost, Y to Noord, Z up) -> three.js (Y up)
+const B = (x, y, z) => new THREE.Vector3(x, z, -y);
+
+const viewer = document.getElementById("viewer");
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+viewer.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+{ // sky gradient
+  const c = document.createElement("canvas"); c.width = 2; c.height = 256;
+  const g = c.getContext("2d"), gr = g.createLinearGradient(0, 0, 0, 256);
+  gr.addColorStop(0, "#4f86cc"); gr.addColorStop(1, "#d4e2ee");
+  g.fillStyle = gr; g.fillRect(0, 0, 2, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  scene.background = t;
+}
+scene.add(new THREE.HemisphereLight(0xdfe9f5, 0x6a6650, 1.7));
+const sun = new THREE.DirectionalLight(0xfff1dc, 2.4);
+sun.position.copy(B(-60, -110, 70));
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, near: 10, far: 400 });
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+const camera = new THREE.PerspectiveCamera(60, 1, 0.05, 3000);
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enabled = false;
+orbit.target.set(0, 5, 0);
+orbit.maxPolarAngle = Math.PI * 0.47;
+orbit.minDistance = 40; orbit.maxDistance = 400;
+
+let data, mode = "seat", marker;
+const state = { tier: 0, block: 0, row: 14, seat: 1 };
+const look = { yaw: 0, pitch: 0 };
+let index = {};   // index[tier][block][row] = [seat records sorted by seat no]
+
+function resize() {
+  const w = viewer.clientWidth, h = viewer.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  // keep about 74 degrees across on any screen shape (a phone's main camera)
+  const hfov = 74 * Math.PI / 180;
+  camera.fov = Math.min(80, 2 * Math.atan(Math.tan(hfov / 2) / camera.aspect) * 180 / Math.PI);
+  camera.updateProjectionMatrix();
+  drawPlan();
+}
+addEventListener("resize", resize);
+
+// ---------- data ----------
+const [gltf, seatsJson] = await Promise.all([
+  fetch("stadium.gltf.json").then(r => r.text()).then(t => new GLTFLoader().parseAsync(t, "")),
+  fetch("seats.json").then(r => r.json()),
+]);
+data = seatsJson;
+gltf.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+scene.add(gltf.scene);
+
+for (const s of data.seats) {
+  const [t, b, r] = s;
+  ((index[t] ??= {})[b] ??= {});
+  (index[t][b][r] ??= []).push(s);
+}
+for (const t in index) for (const b in index[t]) for (const r in index[t][b]) index[t][b][r].sort((a, c) => a[3] - c[3]);
+
+// Seats as one instanced mesh: CR6-sized shell (400 mm wide, 350 mm back, 450 mm high)
+{
+  const pan = new THREE.BoxGeometry(0.4, 0.05, 0.36).translate(0, 0.425, 0.02);
+  const back = new THREE.BoxGeometry(0.4, 0.35, 0.05).translate(0, 0.625, -0.165);
+  const geo = mergeGeometries([pan, back]);
+  const mat = new THREE.MeshStandardMaterial({ roughness: 0.55 });
+  const mesh = new THREE.InstancedMesh(geo, mat, data.seats.length);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
+  const yellow = new THREE.Color("#f6c700"), blue = new THREE.Color("#1e3c8c");
+  data.seats.forEach((s, i) => {
+    const out = data.tiers[s[0]].outward;
+    q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(out[1], out[0]) - Math.PI / 2);
+    m.compose(B(s[4], s[5], s[6]), q, one);
+    mesh.setMatrixAt(i, m);
+    mesh.setColorAt(i, s[7] ? blue : yellow);
+  });
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  scene.add(mesh);
+}
+marker = new THREE.Mesh(new THREE.ConeGeometry(0.9, 2.2, 20).rotateX(Math.PI),
+  new THREE.MeshBasicMaterial({ color: 0xff3b30 }));
+marker.visible = false;
+scene.add(marker);
+document.getElementById("loading").remove();
+
+// ---------- seat selection ----------
+const rowsOf = (t, b) => Object.keys(index[t][b]).map(Number).sort((a, c) => a - c);
+function current() {
+  const rows = rowsOf(state.tier, state.block);
+  state.row = Math.min(Math.max(state.row, rows[0]), rows[rows.length - 1]);
+  if (!index[state.tier][state.block][state.row]) state.row = rows.find(r => r >= state.row) ?? rows[rows.length - 1];
+  const list = index[state.tier][state.block][state.row];
+  state.seat = Math.min(Math.max(state.seat, 1), list.length);
+  return list[state.seat - 1];
+}
+
+function goToSeat(resetLook = true) {
+  const s = current();
+  const t = data.tiers[s[0]];
+  const eye = B(s[4], s[5], s[6] + data.eye_height);
+  if (resetLook) {
+    // look across the pitch, a little towards the centre spot
+    const side = t.outward[0] !== 0;
+    const target = side ? B(0, s[5] * 0.45, 0) : B(s[4] * 0.45, 0, 0);
+    const d = target.clone().sub(eye);
+    look.yaw = Math.atan2(d.x, -d.z);
+    look.pitch = Math.atan2(d.y, Math.hypot(d.x, d.z));
+  }
+  camera.position.copy(eye);
+  applyLook();
+  marker.position.copy(B(s[4], s[5], s[6] + 3.2));
+  const blockName = t.blocks[s[1]];
+  document.getElementById("seatlabel").innerHTML =
+    `<b>${t.name}</b> · Block ${blockName} · Row ${s[2]} · Seat ${s[3]}` +
+    `<small>${index[s[0]][s[1]][s[2]].length} seats in this row · ${rowsOf(s[0], s[1]).length} rows in block ${blockName}</small>`;
+  document.getElementById("rowv").textContent = s[2];
+  document.getElementById("seatv").textContent = s[3];
+  renderChips();
+  drawPlan();
+}
+
+function applyLook() {
+  look.pitch = Math.max(-1.2, Math.min(0.9, look.pitch));
+  const dir = new THREE.Vector3(Math.sin(look.yaw) * Math.cos(look.pitch), Math.sin(look.pitch),
+    -Math.cos(look.yaw) * Math.cos(look.pitch));
+  camera.lookAt(camera.position.clone().add(dir));
+}
+
+// drag to look around from the seat
+let drag = null;
+renderer.domElement.addEventListener("pointerdown", e => {
+  if (mode !== "seat") return;
+  drag = { x: e.clientX, y: e.clientY, yaw: look.yaw, pitch: look.pitch };
+  renderer.domElement.setPointerCapture(e.pointerId);
+  document.getElementById("hint").style.opacity = 0;
+});
+renderer.domElement.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const k = (camera.fov * Math.PI / 180) / viewer.clientHeight;
+  look.yaw = drag.yaw - (e.clientX - drag.x) * k;
+  look.pitch = drag.pitch + (e.clientY - drag.y) * k;
+  applyLook();
+});
+addEventListener("pointerup", () => { drag = null; });
+
+function setMode(m) {
+  mode = m;
+  document.getElementById("mSeat").classList.toggle("on", m === "seat");
+  document.getElementById("mAerial").classList.toggle("on", m === "aerial");
+  orbit.enabled = m === "aerial";
+  marker.visible = m === "aerial";
+  if (m === "aerial") {
+    const s = current();
+    camera.position.copy(B(-95 + s[4] * 0.6, -105 + s[5] * 0.4, 70));
+    orbit.target.copy(B(0, 0, 4));
+    orbit.update();
+  } else goToSeat(false);
+}
+document.getElementById("mSeat").onclick = () => setMode("seat");
+document.getElementById("mAerial").onclick = () => setMode("aerial");
+
+// ---------- panel ----------
+function renderChips() {
+  const tiers = document.getElementById("tiers");
+  tiers.innerHTML = "";
+  data.tiers.forEach((t, i) => {
+    const b = document.createElement("button");
+    b.textContent = t.name; b.className = i === state.tier ? "on" : "";
+    b.onclick = () => { state.tier = i; state.block = Math.floor(t.blocks.length / 2); state.seat = 999; state.row = 8; pick(); };
+    tiers.append(b);
+  });
+  const blocks = document.getElementById("blocks");
+  blocks.innerHTML = "";
+  data.tiers[state.tier].blocks.forEach((name, i) => {
+    if (!index[state.tier][i]) return;
+    const b = document.createElement("button");
+    b.textContent = name; b.className = i === state.block ? "on" : "";
+    b.onclick = () => { state.block = i; state.seat = Math.ceil(index[state.tier][i][rowsOf(state.tier, i)[0]].length / 2); pick(); };
+    blocks.append(b);
+  });
+}
+document.querySelectorAll(".stepper button").forEach(b => b.onclick = () => {
+  const d = +b.dataset.d;
+  if (b.dataset.k === "row") {
+    const rows = rowsOf(state.tier, state.block);
+    const i = rows.indexOf(state.row) + d;
+    if (i >= 0 && i < rows.length) state.row = rows[i];
+  } else state.seat += d;
+  pick();
+});
+function pick() { if (mode !== "seat") setMode("seat"); else goToSeat(true); }
+
+// ---------- plan (top-down, north up) ----------
+const plan = document.getElementById("plan");
+const P = { x0: -64, x1: 64, y0: -66, y1: 74 };
+function planXY(x, y) {
+  const w = plan.width, h = plan.height, s = Math.min(w / (P.x1 - P.x0), h / (P.y1 - P.y0));
+  const ox = (w - s * (P.x1 - P.x0)) / 2, oy = (h - s * (P.y1 - P.y0)) / 2;
+  return [ox + (x - P.x0) * s, h - oy - (y - P.y0) * s, s];
+}
+function drawPlan() {
+  if (!data) return;
+  const dpr = Math.min(devicePixelRatio, 2);
+  plan.width = plan.clientWidth * dpr; plan.height = plan.clientHeight * dpr;
+  const g = plan.getContext("2d");
+  g.clearRect(0, 0, plan.width, plan.height);
+  const [px0, py0, s] = planXY(-34, 52.5), [px1, py1] = planXY(34, -52.5);
+  g.fillStyle = "#2f6b2a"; g.fillRect(px0, py0, px1 - px0, py1 - py0);
+  g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = dpr;
+  g.strokeRect(px0, py0, px1 - px0, py1 - py0);
+  const [cx, cy] = planXY(0, 0);
+  g.beginPath(); g.moveTo(px0, cy); g.lineTo(px1, cy); g.stroke();
+  g.beginPath(); g.arc(cx, cy, 9.15 * s, 0, 7); g.stroke();
+  for (const sgn of [1, -1]) {
+    const [a, b] = planXY(-20.16, sgn * 52.5), [c, d] = planXY(20.16, sgn * 36);
+    g.strokeRect(a, b, c - a, d - b);
+  }
+  const cur = current();
+  for (const st of data.seats) {
+    const [x, y] = planXY(st[4], st[5]);
+    const sel = st[0] === state.tier && st[1] === state.block;
+    g.fillStyle = sel ? (st[7] ? "#4a72e0" : "#ffd84a") : (st[7] ? "#24345e" : "#6d5d1c");
+    g.fillRect(x - 0.5 * s * 0.5, y - 0.5 * s * 0.5, s * 0.5, s * 0.5);
+  }
+  // block labels
+  g.font = `${11 * dpr}px -apple-system, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
+  const seen = {};
+  for (const st of data.seats) { const k = st[0] + ":" + st[1]; (seen[k] ??= [0, 0, 0, st]); seen[k][0] += st[4]; seen[k][1] += st[5]; seen[k][2]++; }
+  for (const k in seen) {
+    const [sx, sy, n, st] = seen[k];
+    if (data.tiers[st[0]].name === "West balcony") continue;
+    const [x, y] = planXY(sx / n, sy / n);
+    const north = data.tiers[st[0]].name === "Noord";
+    g.font = `${(north ? 8.5 : 11) * dpr}px -apple-system, sans-serif`;
+    g.fillStyle = "rgba(255,255,255,.85)"; g.fillText(data.tiers[st[0]].blocks[st[1]], x, y + (north ? (st[1] % 2 ? 6 : -6) * dpr : 0));
+  }
+  const [mx, my] = planXY(cur[4], cur[5]);
+  g.fillStyle = "#ff3b30"; g.beginPath(); g.arc(mx, my, 5 * dpr, 0, 7); g.fill();
+  g.strokeStyle = "#fff"; g.lineWidth = 2 * dpr; g.stroke();
+  // view direction
+  if (mode === "seat") {
+    const len = 16 * dpr;
+    g.strokeStyle = "#ff3b30"; g.beginPath(); g.moveTo(mx, my);
+    g.lineTo(mx + Math.sin(look.yaw) * len, my - Math.cos(look.yaw) * len); g.stroke();
+  }
+}
+plan.addEventListener("click", e => {
+  const r = plan.getBoundingClientRect(), dpr = plan.width / r.width;
+  const px = (e.clientX - r.left) * dpr, py = (e.clientY - r.top) * dpr;
+  let best = null, bd = Infinity;
+  for (const st of data.seats) {
+    const [x, y] = planXY(st[4], st[5]);
+    // prefer the upper tier only when the West balcony is already selected
+    const pen = (data.tiers[st[0]].name === "West balcony") !== (data.tiers[state.tier].name === "West balcony") ? 6 * dpr : 0;
+    const d = Math.hypot(x - px, y - py) + pen;
+    if (d < bd) { bd = d; best = st; }
+  }
+  if (!best || bd > 24 * dpr) return;
+  Object.assign(state, { tier: best[0], block: best[1], row: best[2], seat: best[3] });
+  pick();
+});
+
+// ---------- start ----------
+state.tier = 0; state.block = 6; state.row = 18; state.seat = 12;   // Oost, block G
+resize();
+goToSeat(true);
+renderer.setAnimationLoop(() => {
+  if (mode === "aerial") { orbit.update(); marker.rotation.y += 0.03; drawPlanThrottled(); }
+  else if (drag) drawPlanThrottled();
+  renderer.render(scene, camera);
+});
+let lastPlan = 0;
+function drawPlanThrottled() { const n = performance.now(); if (n - lastPlan > 120) { lastPlan = n; drawPlan(); } }
+setTimeout(() => document.getElementById("hint").style.opacity = 0, 6000);
+</script>
+</body>
+</html>
