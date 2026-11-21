@@ -1,0 +1,92 @@
+{
+  "_note": "Cameras, light and colours live here. Geometry lives in build.py with a source on every number. Units: metres. World X = across the pitch towards Oost, world Y = along the pitch towards Noord, origin = centre spot.",
+
+  "colours": {
+    "turf_dark": "#2E6A2B",
+    "turf_light": "#3B7F34",
+    "lines": "#F2F2F2",
+    "concrete": "#A3A29D",
+    "concrete_dark": "#7D7C78",
+    "roof_top": "#D7D9DB",
+    "roof_under": "#B9BCC0",
+    "steel": "#3B3F45",
+    "glass": "#22303A",
+    "cladding": "#5A5F66",
+    "seat_yellow": "#FFD100",
+    "seat_blue": "#1F3F94",
+    "ad_board": "#151515",
+    "ground": "#6F6E6A",
+    "provisional": "#C9B79C",
+    "sky_top": "#5E8FCF",
+    "sky_horizon": "#CFDDEA"
+  },
+
+  "stand_seat_colours": {
+    "east": "seat_yellow",
+    "north": "seat_yellow",
+    "west_lower": "seat_blue",
+    "west_balcony": "seat_blue"
+  },
+
+  "sun": {
+    "_note": "Matchday STVV v Genk, 29 Nov 2026 13:30 CET, Sint-Truiden 50.81N 5.17E. Bearing in true degrees; build.py rotates by the pitch's 10 degree offset.",
+    "azimuth_true_deg": 195,
+    "elevation_deg": 16,
+    "strength": 3.5
+  },
+
+  "cameras": {
+    "overview": {
+      "_note": "Three-quarter aerial from the south-west, for checking massing against the Mapy 3D view.",
+      "type": "free",
+      "position": [-120, -150, 85],
+      "target": [5, 0, 5],
+      "lens_mm": 32
+    },
+    "check_mapy_from_west": {
+      "_note": "Roughly matches the Mapy.com 3D view (heading 81 true, 30 deg down, 125 m up) used as a massing reference.",
+      "type": "free",
+      "position": [-205, 3, 120],
+      "target": [5, 3, 0],
+      "lens_mm": 30
+    },
+    "oost_G_row14": {
+      "_note": "Block G is the 7th of 11 Oost blocks counted from the north end (A). Row 14 of 27.",
+      "type": "seat",
+      "stand": "east",
+      "tier": 0,
+      "row": 14,
+      "along": -14,
+      "target": [0, -4, 0],
+      "lens_mm": 24
+    },
+    "oost_K_row10_away": {
+      "_note": "Away section this season (Oost J and K, south end).",
+      "type": "seat",
+      "stand": "east",
+      "tier": 0,
+      "row": 10,
+      "along": -50,
+      "target": [0, -8, 0],
+      "lens_mm": 24
+    },
+    "west_skybox_balcony": {
+      "_note": "Front of the hospitality balcony in front of the skyboxes, at the halfway line.",
+      "type": "seat",
+      "stand": "west",
+      "tier": 1,
+      "row": 2,
+      "along": 0,
+      "target": [10, 0, 0],
+      "lens_mm": 24
+    }
+  },
+
+  "render": {
+    "engine": "CYCLES",
+    "draft_resolution": [960, 540],
+    "draft_samples": 24,
+    "final_resolution": [1920, 1080],
+    "final_samples": 256
+  }
+}
